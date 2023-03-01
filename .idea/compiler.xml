@@ -6,8 +6,16 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="shuyi_server" />
+        <module name="shuyi-server" />
+        <module name="auth-bydata" />
       </profile>
     </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="auth-bydata" options="-parameters" />
+      <module name="shuyi-server" options="-parameters" />
+      <module name="shuyi_server" options="-parameters" />
+    </option>
   </component>
 </project>

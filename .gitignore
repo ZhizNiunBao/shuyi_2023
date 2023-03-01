@@ -1,0 +1,40 @@
+# IDEA 配置
+.classpath
+.project
+.settings/
+*.iml
+.idea/
+.run/
+rebel.xml
+
+# 测试类
+#test/
+
+# Java 编译文件
+*.class
+target/
+
+# 日志文件
+*.log*
+logs/
+data/
+datafile/
+csvfile/
+htmlfile/
+dependency-reduced-pom.xml
+*.*_bak
+
+# pid文件
+*.pid
+
+# 版本控制
+!NOTICE-BIN
+!LICENSE-BIN
+.DS_Store
+localbin
+nohup.out
+
+# 配置文件
+config/*
+lab-dfs-manage/config/
+/lab-dfs-manage/src/main/config/
