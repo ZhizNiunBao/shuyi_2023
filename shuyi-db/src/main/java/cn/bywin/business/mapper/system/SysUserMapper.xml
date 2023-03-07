@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.system.SysUserMapper">
+    <sql id="Where_Column">
+        <if test="mobile != null ">
+            and mobile = #{mobile}
+        </if>
+        <if test="password != null ">
+            and password = #{password}
+        </if>
+        <if test="creatorId != null ">
+            and creator_Id = #{creatorId}
+        </if>
+
+        <if test="nodePartyId != null ">
+            and node_Party_Id = #{nodePartyId}
+        </if>
+
+        <if test="isLock != null ">
+            and is_lock = #{isLock}
+        </if>
+
+        <if test="idList != null and idList.size() &gt; 0 ">
+            and id in
+            <foreach item="id" collection="idList" index="index" open="(" close= ")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+
+    </sql>
+    <sql id="Where_ByRole">
+        <if test="mobile != null and mobile !='' ">
+            and su.mobile like #{mobile}
+        </if>
+        <if test="username != null and username!='' ">
+            and su.username like #{username}
+        </if>
+        <if test="isLock != null ">
+            and su.is_lock = #{isLock}
+        </if>
+        <if test="roleName != null and roleName!='' ">
+            and ur.role_name = #{roleName}
+        </if>
+    </sql>
+    <select id="findBeanList" parameterType="Object" resultType="cn.bywin.business.bean.system.SysUserDo">
+        SELECT * from sys_user
+        where 1=1
+        <include refid="Where_Column"/>
+        order by reg_time
+
+        ${pageInfo}
+    </select>
+
+    <select id="findBeanCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from sys_user
+        where 1=1
+        <include refid="Where_Column"/>
+    </select>
+    <select id="findAllByRoleCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from sys_user su left join (select role_name ,role_order,sr.id, sur.user_id from sys_role sr ,sys_user_role sur
+        where sr.id=sur.role_id ) ur on su.id  = ur.user_id
+        where 1=1
+        <include refid="Where_ByRole"/>
+    </select>
+    <select id="findAllByRole" parameterType="Object" resultType="cn.bywin.business.bean.view.UserVo">
+        select su.*,role_name as roleName from sys_user su left join (select role_name ,role_order,sr.id, sur.user_id from sys_role sr ,sys_user_role sur
+        where sr.id=sur.role_id ) ur on su.id  = ur.user_id
+        where 1=1
+        <include refid="Where_ByRole"/>
+
+        order by ur.role_order, su.reg_time desc
+        ${pageInfo}
+    </select>
+
+</mapper>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.bydb.TruModelTaskLogMapper">
+    <sql id="Where_Column">
+
+        <if test="qryCond != null ">
+            AND ( task_name LIKE #{qryCond}  )
+        </if>
+
+        <if test="modelId != null ">
+            AND model_id = #{modelId}
+        </if>
+
+        <if test="dcId != null ">
+            AND dc_id = #{dcId}
+        </if>
+
+        <if test="id != null ">
+            AND id = #{id}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.bydb.TTruModelTaskLogDo">
+        SELECT * FROM t_tru_model_task_log
+        <where>
+            <include refid="Where_Column" />
+        </where>
+        order by norder
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt FROM t_tru_model_task_log
+        <where>
+            <include refid="Where_Column" />
+        </where>
+    </select>
+
+
+</mapper>

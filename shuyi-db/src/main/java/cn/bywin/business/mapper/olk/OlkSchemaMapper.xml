@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.olk.OlkSchemaMapper">
+    <sql id="Where_Column">
+
+        <if test="schemaName != null ">
+            and schema_name like #{schemaName}
+        </if>
+
+        <if test="qryCond != null ">
+            and ( schema_name like #{qryCond}  )
+        </if>
+
+        <if test="dbId != null ">
+            and db_id = #{dbId}
+        </if>
+
+        <if test="id != null ">
+            and id = #{id}
+        </if>
+
+        <if test="userId != null ">
+            and user_id= #{userId}
+        </if>
+
+        <if test="userAccount != null ">
+            and user_account= #{userAccount}
+        </if>
+
+        <if test="creatorId != null ">
+            and creator_Id = #{creatorId}
+        </if>
+
+        <if test="enable != null ">
+            and enable = #{enable}
+        </if>
+
+        <if test=" other1 != null and other1.length &gt; 0 ">
+            and db_id in
+            <foreach item="item" index="index" collection="other1"
+                     open="(" separator="," close=")">
+                #{item}
+            </foreach>
+
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.olk.TOlkSchemaDo">
+        SELECT * from t_olk_schema
+        where 1=1
+        <include refid="Where_Column" />
+        order by created_time desc
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt from t_olk_schema
+        where 1=1
+        <include refid="Where_Column" />
+    </select>
+
+</mapper>

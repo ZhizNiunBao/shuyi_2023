@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.bydb.TruFavouriteObjectMapper">
+    <sql id="Where_Column">
+
+        <if test="qryCond != null ">
+            AND ( obj_name LIKE #{qryCond} or obj_chn_name LIKE #{qryCond}  )
+        </if>
+
+        <if test="ownerAccount != null ">
+            AND owner_account = #{ownerAccount}
+        </if>
+
+        <if test="dcId != null ">
+            AND dc_id = #{dcId}
+        </if>
+
+        <if test="relId != null ">
+            AND rel_id = #{relId}
+        </if>
+
+        <if test="ownerAccount != null ">
+            AND owner_account = #{ownerAccount}
+        </if>
+
+        <if test="id != null ">
+            AND id = #{id}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.bydb.TTruFavouriteObjectDo">
+        SELECT * FROM t_tru_favourite_object
+        <where>
+            <include refid="Where_Column" />
+        </where>
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt FROM t_tru_favourite_object
+        <where>
+            <include refid="Where_Column" />
+        </where>
+    </select>
+
+
+</mapper>

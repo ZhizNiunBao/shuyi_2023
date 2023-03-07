@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.federal.ProjectMapper">
+
+    <sql id="Where_Column">
+
+
+        <if test="name != null ">
+            and a.name like #{name}
+        </if>
+        <if test="creatorAccount != null ">
+            and  a.creator_account = #{creatorAccount}
+        </if>
+        <if test="endTime != null ">
+            and  a.created_time &gt; #{startTime}
+        </if>
+        <if test="endTime != null ">
+            and  a.created_time &lt; #{endTime}
+        </if>
+    </sql>
+    <sql id="Case_Column">
+
+        <if test="host != null and guest==null">
+            fl_project a  on a.host=#{host}
+        </if>
+        <if test="host != null and guest!=null">
+            ( SELECT a.* from fl_project on a.host=#{host}
+            union all
+            SELECT a.* from fl_project a join fl_project_guest g on a.id=g.project_id and  g.node_id=#{guest} ) as a
+        </if>
+        <if test="host == null and guest!=null">
+             fl_project a join fl_project_guest g on a.id=g.project_id and  on g.node_id #{guest}
+        </if>
+        where 1=1
+        <if test="name != null ">
+           and a.name like #{name}
+        </if>
+        <if test="endTime != null ">
+            and  a.created_time &gt; #{startTime}
+        </if>
+        <if test="endTime != null ">
+            and  a.created_time &lt; #{endTime}
+        </if>
+    </sql>
+
+    <select id="findBeanList" parameterType="Object" resultType="cn.bywin.business.bean.federal.FProjectDo">
+        SELECT a.* from fl_project a
+        where 1=1
+        <include refid="Where_Column"/>
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findBeanCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from fl_project a
+        where 1=1
+
+        <include refid="Where_Column"/>
+    </select>
+
+
+    <select id="findByMemberBeanList" parameterType="Object" resultType="cn.bywin.business.bean.federal.FProjectDo">
+        SELECT a.* from  fl_project a join fl_project_guest g on a.id=g.project_id and   g.node_id= #{guest}
+
+        <include refid="Where_Column"/>
+
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findByMemberBeanCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from  fl_project a join fl_project_guest g on a.id=g.project_id and   g.node_id= #{guest}
+
+        <include refid="Where_Column"/>
+
+        order by a.created_time desc
+    </select>
+
+
+</mapper>

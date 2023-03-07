@@ -18,7 +18,9 @@
 
   <modules>
     <module>auth-bydata</module>
+    <module>shuyi-db</module>
     <module>shuyi-server</module>
+    <module>shuyi-pms</module>
   </modules>
 
   <properties>

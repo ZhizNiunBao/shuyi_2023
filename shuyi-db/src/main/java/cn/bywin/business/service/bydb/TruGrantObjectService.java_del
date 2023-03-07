@@ -1,0 +1,41 @@
+package cn.bywin.business.service.bydb;
+
+
+import cn.bywin.business.bean.bydb.TTruGrantObjectDo;
+import cn.bywin.business.mapper.bydb.TruGrantObjectMapper;
+import cn.service.impl.BaseServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.common.Mapper;
+
+import java.util.List;
+
+
+@Service
+public class TruGrantObjectService extends BaseServiceImpl<TTruGrantObjectDo, String> {
+
+	@Autowired
+	private TruGrantObjectMapper commMapper;
+
+	@Override
+	public Mapper<TTruGrantObjectDo> getMapper() {
+		return commMapper;
+	}
+
+	public List<TTruGrantObjectDo> findBeanList( TTruGrantObjectDo bean){
+		return  commMapper.findBeanList(bean);
+	}
+
+	public long findBeanCnt( TTruGrantObjectDo bean){
+		return  commMapper.findBeanCnt(bean);
+	}
+
+	public List<TTruGrantObjectDo> findUnfinished( String datasetId){
+		return commMapper.findUnfinished( datasetId );
+	}
+
+	public long deleteByDatasetId(String datasetId ){
+		return commMapper.deleteByDatasetId( datasetId );
+	}
+
+}

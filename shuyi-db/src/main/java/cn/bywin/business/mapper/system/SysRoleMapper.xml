@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.system.SysRoleMapper">
+    <sql id="Where_Column">
+
+        <if test="roleOrder != null ">
+            and role_order = #{roleOrder}
+        </if>
+        <if test="roleName != null and roleName !='' ">
+            and role_name like #{roleName}
+        </if>
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.system.SysRoleDo">
+        SELECT * from sys_role
+        where 1=1
+        <include refid="Where_Column" />
+        order by role_order,created_time asc
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt from sys_role
+        where 1 =1
+        <include refid="Where_Column" />
+    </select>
+
+
+
+
+    <select id="findAllByRoleCnt" parameterType="Object" resultType="Long">
+        select count(*) cnt  from sys_user su ,
+         sys_user_role sur where su.id=sur.user_id and su.is_lock=1
+    </select>
+    <select id="findAllByRole" parameterType="Object" resultType="cn.bywin.business.bean.view.UserVo">
+        select su.*, IF(sur.role_id=#{roleId}, 1, 0) as status from sys_user su ,
+        sys_user_role sur where su.id=sur.user_id and su.is_lock=1
+        order by su.reg_time desc
+        ${pageInfo}
+    </select>
+</mapper>

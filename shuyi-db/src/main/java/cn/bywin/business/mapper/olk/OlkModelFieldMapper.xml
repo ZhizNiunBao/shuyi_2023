@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.olk.OlkModelFieldMapper">
+
+    <sql id="Where_Column">
+
+
+        <if test="orderFunc != null ">
+            ,order_func = #{orderFunc}
+        </if>
+        <if test="aggregation != null ">
+            ,aggregation = #{aggregation}
+        </if>
+        <if test="fieldExpr != null ">
+            , field_expr= #{fieldExpr}
+        </if>
+        <if test="filterSort != null ">
+            , filter_sort= #{filterSort}
+        </if>
+        <if test="filterValue!= null ">
+            , filter_value= #{filterValue}
+        </if>
+        <if test="columnType != null ">
+            , column_type= #{columnType}
+        </if>
+<!---->
+    </sql>
+    <select id="updateById" parameterType="cn.bywin.business.bean.olk.TOlkModelFieldDo">
+        UPDATE  t_olk_model_field SET
+
+        field_alias= #{fieldAlias},field_name= #{fieldName},is_select= #{isSelect}
+        <include refid="Where_Column"/>
+
+        where id = #{id}
+
+    </select>
+
+
+</mapper>

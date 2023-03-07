@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.bydb.TruApplyObjectMapper">
+    <sql id="Where_Column">
+
+        <if test="qryCond != null ">
+            AND ( obj_name LIKE #{qryCond} or obj_chn_name LIKE #{qryCond}  )
+        </if>
+
+        <if test="nodePartyId != null ">
+            AND node_party_id = #{nodePartyId}
+        </if>
+
+        <if test="relId != null ">
+            AND rel_id = #{relId}
+        </if>
+
+        <if test="candidateUser != null ">
+            AND candidate_user like #{candidateUser}
+        </if>
+
+        <if test="applyAccount != null ">
+            AND apply_account = #{applyAccount}
+        </if>
+
+        <choose>
+            <when test="status != null and status == 20 ">
+                and ( status in( 21, 22) )
+            </when>
+            <when test="status != null and status != 20 ">
+                and status =#{status}
+            </when>
+
+        </choose>
+
+        <if test="id != null ">
+            AND id = #{id}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.bydb.TTruApplyObjectDo">
+        SELECT * FROM t_tru_apply_object
+        <where>
+            <include refid="Where_Column" />
+        </where>
+
+        order by apply_time  desc
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt FROM t_tru_apply_object
+        <where>
+            <include refid="Where_Column" />
+        </where>
+    </select>
+
+
+</mapper>

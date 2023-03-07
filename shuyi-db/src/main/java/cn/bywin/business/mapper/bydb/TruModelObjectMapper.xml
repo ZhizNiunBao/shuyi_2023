@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.bydb.TruModelObjectMapper">
+    <sql id="Where_Column">
+
+
+        <if test="id != null ">
+            and id = #{id}
+        </if>
+
+        <if test="name != null ">
+            and name = #{name}
+        </if>
+
+        <if test="creatorId != null ">
+            and creator_Id = #{creatorId}
+        </if>
+
+        <if test="status != null ">
+            and status = #{status}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.bydb.TTruModelObjectDo">
+        SELECT * from t_tru_model_object
+        where 1=1
+        <include refid="Where_Column" />
+        order by created_time desc
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt from t_tru_model_object
+        where 1=1
+        <include refid="Where_Column" />
+    </select>
+
+
+   <!-- <select id="findModelObjecRelData_old"    parameterType="String"  resultType="cn.bywin.business.bean.view.bydb.DigitalAssetVo">
+        select e.*,e.creator_name dc_name,g.id otherId ,case when e.user_id=g.user_id then 2 when grant_flag = 1 then 1 else 0 end user_priv_grant from
+        (select a.id id, 'db' scatalog, a.id obj_id ,a.dc_id ,a.schema_id ,a.db_id, null datasource_id ,a.object_name , a.obj_full_name ,a.obj_chn_name ,a.created_time ,
+        1 priv_flag ,null ds_label,'ide' stype, a.del_flag,a.enable,null remark,a.user_id,a.user_name,a.user_account,
+        b.schema_name , b.schema_chn_name , c.db_name ,c.dc_db_name ,c.db_chn_name,c.creator_name from t_bydb_object a, t_bydb_schema b, t_bydb_database c where a.db_id  = c.id
+        and a.schema_id  =b.id
+        UNION ALL
+        select d.id id,'ds' scatalog, d.id obj_id,d.dc_id,null schema_id ,null db_id,d.datasource_id datasource_id,d.set_code,d.view_name,d.set_chn_name , d.created_time ,
+        priv_flag ,ds_label,stype, d.del_flag,d.enable,d.remark,d.user_id,d.user_name,d.user_account,
+        null schema_name, null schema_chn_name,null db_name,null dc_db_name,null db_chn_name,creator_name  from t_bydb_dataset  d
+        ) e inner join
+        t_tru_model_object g on g.object_id  = e.id
+        left join ( select count(*) grant_count,sum(case when user_id=g.user_id then 1 else 0 end) grant_flag, data_id rel_id
+        from fl_data_approve where approve = 1 group by data_id ) k
+        on e.id = k.rel_id
+        where
+        g.object_id  = e.id
+        and g.model_id =#{modelId}
+        order by obj_full_name
+
+    </select>-->
+
+    <!--<select id="findModelObjecRelData"    parameterType="String"  resultType="cn.bywin.business.bean.view.bydb.DigitalAssetVo">
+        select e.*,e.creator_name dc_name,g.id model_object_id
+        ,case when e.user_id=g.creator_id then 3 else k.approve end user_priv_grant from
+        (select a.id id, 'db' scatalog, a.id obj_id ,a.dc_id ,a.schema_id ,a.db_id, null datasource_id ,a.object_name , a.obj_full_name ,a.obj_chn_name ,a.created_time ,
+        1 priv_flag ,null ds_label,'ide' stype, a.del_flag,a.enable,null remark,a.user_id,a.user_name,a.user_account,
+        b.schema_name , b.schema_chn_name , c.db_name ,c.dc_db_name ,c.db_chn_name,c.creator_name from t_bydb_object a, t_bydb_schema b, t_bydb_database c where a.db_id  = c.id
+        and a.schema_id  =b.id
+        ) e inner join
+        t_tru_model_object g on g.real_obj_id  = e.id
+        left join ( select x.data_id rel_id,x.creator_id,x.approve approve from
+          fl_data_approve x, (
+            select max(created_time) ct,creator_id ,data_id from fl_data_approve where approve != 9 group by creator_id ,data_id
+           ) y where x.data_id =y.data_id and x.creator_id =y.creator_id and x.created_time = y.ct and approve != 9
+        ) k
+        on e.id = k.rel_id and g.user_id  = k.creator_id
+        where
+        g.real_obj_id  = e.id
+        and g.model_id =#{modelId}
+        order by obj_full_name
+
+    </select>-->
+
+
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.bydb.DigitalAssetMapper">
+    <sql id="Where_Column">
+
+        <if test="qryCond != null ">
+            and ( object_name like #{qryCond} or obj_chn_name like #{qryCond} or e.user_name like #{qryCond} )
+        </if>
+
+        <if test="scatalog != null ">
+            and scatalog = #{scatalog}
+        </if>
+
+        <if test="id != null ">
+            and e.id = #{id}
+        </if>
+
+        <if test="privFlag != null ">
+            and priv_flag = #{privFlag}
+        </if>
+
+        <if test="sdt1 != null ">
+            and created_time &gt;= #{sdt1}
+        </if>
+
+        <if test="nodePartyId != null ">
+            and node_party_id= #{nodePartyId}
+        </if>
+
+        <choose>
+            <when test="datasourceId == null or datasourceId.length() == 0 ">
+            </when>
+            <when test="datasourceId != null and datasourceId == 'notdc'.toString() ">
+                and datasource_id != 'dchetu'
+            </when>
+            <when test="datasourceId != null and datasourceId !='notdc'.toString() ">
+                and datasource_id = #{datasourceId}
+            </when>
+
+        </choose>
+
+        <if test="dcId != null ">
+            and dc_id = #{dcId}
+        </if>
+
+        <if test="userId != null ">
+            and user_id= #{userId}
+        </if>
+
+        <choose>
+        <when test="dataType != null and dataType == 'favorite'.toString() ">
+            and favourite_flag = 1
+        </when>
+
+        <when test="dataType != null and dataType == 'grant'.toString() ">
+            and grant_flag = 1
+        </when>
+
+        </choose>
+
+    </sql>
+
+    <sql id="table_select">
+
+        <choose>
+            <when test="scatalog == null or scatalog == ''.toString() ">
+                select  a.id, 'db' scatalog, a.id obj_id, a.user_id,a.user_name,a.user_account ,a.node_party_id, a.schema_id ,a.db_id, dbsource_id datasource_id ,a.object_name , a.obj_full_name ,a.obj_chn_name ,a.dc_id,a.created_time ,a.creator_name,a.creator_account,
+                1 priv_flag ,null ds_label,'ide' stype, null remark,a.share_flag,
+                b.schema_name , b.schema_chn_name , c.db_name ,c.dc_db_name ,c.db_chn_name from t_bydb_object a, t_bydb_schema b, t_bydb_database c where a.db_id  = c.id
+                and a.schema_id  =b.id and a.enable = 1
+                /* UNION ALL
+                 select d.id id,null data_type,'ds' scatalog, d.id obj_id,d.user_id,d.user_name,d.user_account,null schema_id ,null db_id,d.datasource_id datasource_id,d.set_code object_name,d.view_name obj_full_name,d.set_chn_name obj_chn_name,d.dc_id, d.created_time ,d.creator_name,d.creator_account,
+                 priv_flag ,ds_label,stype, d.remark,a.share_flag,
+                 null schema_name, null schema_chn_name,null db_name,null dc_db_name,null db_chn_name  from t_bydb_dataset  d where del_flag = 0 and enable =1
+            */
+            </when>
+            <when test="scatalog=='db' ">
+                select a.id, 'db' scatalog, a.id obj_id, a.user_id,a.user_name,a.user_account, a.node_party_id, a.schema_id, a.db_id, dbsource_id datasource_id ,a.object_name , a.obj_full_name ,a.obj_chn_name ,a.dc_id,a.created_time ,a.creator_name,a.creator_account,
+                1 priv_flag ,null ds_label,'ide' stype, null remark,a.share_flag,
+                b.schema_name , b.schema_chn_name , c.db_name ,c.dc_db_name ,c.db_chn_name from t_bydb_object a, t_bydb_schema b, t_bydb_database c where a.db_id  = c.id
+                and a.schema_id  =b.id and a.enable = 1
+            </when>
+            <when test="scatalog=='ds' ">
+                select d.id,'ds' scatalog, d.id obj_id,d.id obj_id,d.user_id,d.user_name,d.user_account,null schema_id ,null db_id,d.datasource_id datasource_id,d.set_code object_name,d.view_name obj_full_name,d.set_chn_name obj_chn_name,d.dc_id, d.created_time ,d.creator_name,d.creator_account,
+                priv_flag ,ds_label,stype, d.remark,a.share_flag,
+                null schema_name, null schema_chn_name,null db_name,null dc_db_name,null db_chn_name  from t_bydb_dataset  d where del_flag = 0 and enable =1
+            </when>
+
+        </choose>
+
+    </sql>
+
+    <sql id="not_user_data">
+        <choose>
+            <when test="dataType == 'node'.toString() ">
+                 and e.user_id != #{ownerId}
+            </when>
+        </choose>
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.view.bydb.DigitalAssetVo">
+        select e.*,case when use_cnt is not null then use_cnt else 0 end use_cnt,case when user_id=#{ownerId} then 3 when grant_flag = 1 then 1 when apply_flag = 1 then 1 else 0 end user_priv_grant,
+        f.node_party_name,apply_count,apply_flag,grant_count,grant_flag,favourite_count,favourite_flag,discuss_total_count,discuss_user_count from
+        (
+        <include refid="table_select" />
+        ) e left join
+        (select id ,name node_party_name from fl_node_party where status = 1 ) f
+        on e.node_party_id = f.id
+        left join (  select count(*) apply_count,max(case when creator_id=#{ownerId} then approve else 0 end) apply_flag, data_id rel_id  from fl_data_approve where approve = 2 group by data_id ) g
+        on e.id = g.rel_id
+        left join (  select count(*) favourite_count,max(case when creator_id=#{ownerId} and node_party_id=#{userNodePartyId} then 1 else 0 end) favourite_flag, rel_id from t_tru_favourite_object group by rel_id ) h
+        on e.id = h.rel_id
+        left join ( select count(*) discuss_total_count,sum(case when discuss_account=#{ownerId} and node_party_id=#{userNodePartyId} then 1 else 0 end) discuss_user_count, rel_id from t_tru_discuss_object group by rel_id ) j
+        on e.id = j.rel_id
+        left join ( select count(*) grant_count,sum(case when creator_id=#{ownerId} then 1 else 0 end) grant_flag, data_id rel_id
+        from fl_data_approve where approve = 1 group by data_id ) k
+        on e.id = k.rel_id
+        left join ( select count(id) use_cnt, real_obj_id from t_tru_model_object group by real_obj_id ) l
+        on e.id = l.real_obj_id
+        where f.id is not null
+        and (
+        ( e.share_flag = 2 and e.id in ( select data_id  from t_bydb_data_node where  node_id = #{userNodePartyId} ) )
+        or ( e.share_flag =1) or ( e.user_id = #{ownerId} ) )
+
+        <include refid="Where_Column" />
+        <include refid="not_user_data" />
+
+        order by scatalog,created_time desc
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt from
+        (
+        <include refid="table_select" />
+        ) e left join
+        (select id ,name node_party_name from fl_node_party where status = 1 ) f
+        on e.node_party_id = f.id
+        left join (  select count(*) apply_count,max(case when creator_id=#{ownerId} then approve else 0 end) apply_flag, data_id rel_id  from fl_data_approve where approve = 2 group by data_id ) g
+        on e.id = g.rel_id
+        left join (  select count(*) favourite_count,max(case when creator_id=#{ownerId} and node_party_id=#{userNodePartyId} then 1 else 0 end) favourite_flag, rel_id from t_tru_favourite_object group by rel_id ) h
+        on e.id = h.rel_id
+        left join ( select count(*) discuss_total_count,sum(case when discuss_account=#{ownerId} and node_party_id=#{userNodePartyId} then 1 else 0 end) discuss_user_count, rel_id from t_tru_discuss_object group by rel_id ) j
+        on e.id = j.rel_id
+        left join ( select count(*) grant_count,sum(case when creator_id=#{ownerId} then 1 else 0 end) grant_flag, data_id rel_id
+        from fl_data_approve where approve = 1 group by data_id ) k
+        on e.id = k.rel_id
+        left join ( select count(id) use_cnt, real_obj_id from t_tru_model_object group by real_obj_id ) l
+        on e.id = l.real_obj_id
+        where f.id is not null
+        and (
+        ( e.share_flag = 2 and e.id in ( select data_id  from t_bydb_data_node where  node_id = #{userNodePartyId} ) )
+        or ( e.share_flag =1) or ( e.share_flag = 0  and e.user_id = #{ownerId} ) )
+
+        <include refid="Where_Column" />
+        <include refid="not_user_data" />
+
+    </select>
+
+</mapper>

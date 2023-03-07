@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.bydb.TruApplyCheckMapper">
+    <sql id="Where_Column">
+
+        <if test="qryCond != null ">
+            AND ( check_account LIKE #{qryCond} or check_chn_name LIKE #{qryCond} or or check_remark LIKE #{qryCond} )
+        </if>
+
+        <if test="applyId != null ">
+            AND apply_id = #{applyId}
+        </if>
+
+        <if test="checkAccount != null ">
+            AND check_account = #{checkAccount}
+        </if>
+
+        <if test="checkStatus != null ">
+            AND check_status = #{checkStatus}
+        </if>
+
+        <if test="id != null ">
+            AND id = #{id}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.bydb.TTruApplyCheckDo">
+        SELECT * FROM t_tru_apply_check
+        <where>
+            <include refid="Where_Column" />
+        </where>
+
+        order by check_time asc
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt FROM t_tru_apply_check
+        <where>
+            <include refid="Where_Column" />
+        </where>
+    </select>
+
+
+
+    <sql id="Where_v">
+
+        <if test="qryCond != null ">
+            AND ( obj_name LIKE #{qryCond} or obj_chn_name LIKE #{qryCond}  )
+        </if>
+
+        <if test="applyId != null ">
+            AND apply_id = #{applyId}
+        </if>
+
+        <if test="checkAccount != null ">
+            AND a.check_account = #{checkAccount}
+        </if>
+
+        <if test="checkStatus != null ">
+            AND a.check_status = #{checkStatus}
+        </if>
+
+        <if test="id != null ">
+            AND id = #{id}
+        </if>
+
+    </sql>
+
+    <select id="findVList"    parameterType="Object"  resultType="cn.bywin.business.bean.view.bydb.TruApplyCheckVo">
+        SELECT a.*,rel_id, stype, object_id, dataset_id, dc_id, db_id, schema_id, obj_name, obj_full_name, obj_chn_name, apply_account,apply_chn_name,apply_dept_no,apply_dept_name, apply_time, apply_note, status, process_instance_id, task_Id, task_name, candidate_user, candidate_role
+        FROM t_tru_apply_check a, t_tru_apply_object b
+        where a.apply_id  = b.id
+        <include refid="Where_v" />
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findVCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt FROM t_tru_apply_check a, t_tru_apply_object b
+        where a.apply_id  = b.id
+        <include refid="Where_v" />
+
+    </select>
+
+
+</mapper>

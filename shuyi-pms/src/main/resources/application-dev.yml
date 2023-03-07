@@ -1,0 +1,10 @@
+nacos:
+  config:
+    namespace: ${NAMESPACE:dev}
+    group: ${GROUP:BYDATA_GROUP}
+    server-addr: ${NACOS_ADDR:192.168.96.210:8848}
+    data-id: ${DATA_ID:bydata-pms.yaml}
+    bootstrap:
+      enable: true
+      log-enable: true
+    type: yaml

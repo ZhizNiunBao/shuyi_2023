@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.federal.ModelMapper">
+
+    <sql id="Where_Column">
+        <if test="qryCond != null ">
+            and (name like #{qryCond})
+        </if>
+        <if test="projectId != null ">
+            and project_id= #{projectId}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.federal.FModelDo">
+        SELECT a.* from fl_model a
+        where 1=1
+        <include refid="Where_Column" />
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findBeanCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from fl_model a
+        where 1=1
+        <include refid="Where_Column" />
+    </select>
+
+
+    <select id="selectByProjectDataId" parameterType="Object" resultType="cn.bywin.business.bean.federal.FModelDo">
+        SELECT fm.* FROM fl_model fm  join fl_data_approve fda on
+         fm.project_id= fda.project_id and   fda.project_id = #{projectId} and fda.data_id=#{dataId}
+        and fda.types=#{types}
+        <if test="ids != null  ">
+            and fm.id in
+            <foreach item="id" collection="ids" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+
+        order by fm.created_time desc
+    </select>
+</mapper>

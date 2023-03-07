@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.federal.DataPartyMapper">
+
+    <sql id="Where_Column">
+
+        <if test="namespace != null ">
+            and namespace = #{namespace}
+        </if>
+        <if test="name != null ">
+            and name like #{name}
+        </if>
+
+        <if test="tableName != null ">
+            and table_name = #{tableName}
+        </if>
+        <if test="dataType != null ">
+            and data_type = #{dataType}
+        </if>
+        <if test="creatorAccount != null ">
+            and creator_account = #{creatorAccount}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList" parameterType="Object" resultType="cn.bywin.business.bean.federal.FDataPartyDo">
+        SELECT a.* from fl_data_party a
+        where 1=1
+
+        <include refid="Where_Column"/>
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findBeanCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from fl_data_party a
+        where 1=1
+        <include refid="Where_Column"/>
+    </select>
+
+
+    <select id="findBeanFlList" parameterType="Object" resultType="cn.bywin.business.bean.view.federal.FDataPartyVo">
+        SELECT a.*,np.name as nodeName from fl_data_party a ,fl_node_party np where a.node_id=np.id and np.is_open=1 and
+        a.status=1
+        and (a.is_show=1 or (a.is_show=2 and a.id in ( SELECT data_id from
+        fl_data_node
+        where node_id=#{nodeInId}) ) or (a.is_show=0 and a.creator_id=#{creatorId}))
+        <if test="projectId != null and types!=null ">
+            and a.id not in ( SELECT data_id from
+            fl_data_approve
+            where project_id=#{projectId} and types=#{types} and node_id=#{nodeId} and approve!=9 )
+        </if>
+        <if test="name != null ">
+            and a.name like #{name}
+        </if>
+        <if test="nodeId != null ">
+            and np.id = #{nodeId}
+        </if>
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findBeanFlCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from fl_data_party a ,fl_node_party np where a.node_id=np.id and np.is_open=1 and a.status=1
+        and (a.is_show=1 or (a.is_show=2 and a.id in ( SELECT data_id from
+        fl_data_node
+        where node_id=#{nodeInId}) ) or (a.is_show=0 and a.creator_id=#{creatorId}))
+        <if test="projectId != null and types!=null ">
+            and a.id not in ( SELECT data_id from
+            fl_data_approve
+            where project_id=#{projectId} and types=#{types} and node_id=#{nodeId} and approve!=9 )
+        </if>
+        <if test="name != null ">
+            and a.name like #{name}
+        </if>
+        <if test="nodeId != null ">
+            and np.id = #{nodeId}
+        </if>
+    </select>
+
+    <select id="findBeanProjectList" parameterType="Object" resultType="cn.bywin.business.bean.federal.FDataPartyDo">
+        SELECT a.* from fl_data_party a join fl_project_data p on
+        a.id=p.data_id and p.project_id =#{projectId}
+        where 1=1
+        <include refid="Where_Column"/>
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findBeanProjectCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from fl_data_party a join fl_project_data p
+        on a.id=p.data_id and p.project_id =#{projectId}
+        where 1=1
+
+        <include refid="Where_Column"/>
+    </select>
+
+    <select id="selectByProjectId" resultType="cn.bywin.business.bean.federal.FDataPartyDo">
+        SELECT * FROM fl_data_party d JOIN fl_project_data g ON g.data_id = d.id AND g.project_id =#{projectId}
+        AND d.node_id in
+        <foreach item="id" collection="ids" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        where d.status !=-1
+        order by d.created_time desc
+    </select>
+
+    <select id="selectByModelId" resultType="cn.bywin.business.bean.federal.FDataPartyDo">
+        SELECT * FROM fl_data_party d
+        JOIN fl_model_data m ON m.data_id = d.id AND m.model_id =#{modelId} AND m.types =#{types}
+        AND d.node_id in
+        <foreach item="id" collection="ids" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by d.created_time desc
+    </select>
+
+    <select id="findByAllIds" resultType="cn.bywin.business.bean.federal.FDataPartyDo">
+        SELECT * FROM fl_data_party where id in
+        <foreach item="id" collection="ids" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by created_time desc
+    </select>
+    <select id="findByAllIdsDetail" resultType="cn.bywin.business.bean.view.federal.FDataPartyVo">
+        SELECT *,fnp.name as nodeName FROM fl_data_party dp join fl_node_party fnp on fnp.id=dp.node_id and dp.id in
+        <foreach item="id" collection="ids" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        order by dp.created_time desc
+    </select>
+
+    <select id="findDataOrder" parameterType="cn.bywin.business.bean.view.federal.FDataPartyVo"
+            resultType="cn.bywin.business.bean.view.federal.DataOrderVo">
+        SELECT fd.name as dataName ,fd.tags as keyName ,fda.approve as approve, fnp.name as nodeName ,fp.name as
+        projectName ,
+        fm.name as modelName , fm.id as modelId ,fp.created_time as projectTime,fm.created_time as modelTime FROM
+        fl_data_party fd join
+        fl_data_approve fda on fd.id=fda.data_id join fl_project fp
+        on fda.project_id = fp.id join fl_model fm on fm.project_id=fp.id join fl_node_party
+        fnp on fnp.id=fd.node_id and fd.creator_id=#{creatorId} and fda.approve!=9
+
+        <if test="name != null ">
+            and fd.name like #{name}
+        </if>
+        order by fd.created_time desc
+        ${pageInfo}
+    </select>
+
+
+    <select id="findDataOrderCnt" parameterType="cn.bywin.business.bean.view.federal.FDataPartyVo" resultType="Long">
+        SELECT count(*) cnt FROM fl_data_party fd join
+        fl_data_approve fda on fd.id=fda.data_id join fl_project fp
+        on fda.project_id = fp.id join fl_model fm on fm.project_id=fp.id join fl_node_party
+        fnp on fnp.id=fd.node_id and fd.creator_id=#{creatorId} and fda.approve!=9
+
+        <if test="name != null ">
+            and fd.name like #{name}
+        </if>
+    </select>
+
+    <select id="findDataOrderTree" parameterType="cn.bywin.business.bean.view.federal.FDataPartyVo"
+            resultType="cn.bywin.business.bean.view.federal.DataOrderVo">
+        SELECT fd.name as dataName , fp.creator_name as creatorName ,fd.id as dataId ,fd.tags as keyName ,fda.approve as approve, fda.types as types,fnp.name as nodeName ,fp.name as
+        projectName , fp.id as projectId ,fp.created_time as projectTime FROM
+        fl_data_party fd join
+        fl_data_approve fda on fd.id=fda.data_id join fl_project fp
+        on fda.project_id = fp.id  join fl_node_party
+        fnp on fnp.id=fd.node_id and fd.creator_id=#{creatorId} and fda.approve!=9
+
+        <if test="name != null ">
+            and fd.name like #{name}
+        </if>
+        order by fd.created_time desc
+        ${pageInfo}
+    </select>
+
+
+    <select id="findDataOrderTreeCnt" parameterType="cn.bywin.business.bean.view.federal.FDataPartyVo" resultType="Long">
+        SELECT count(*) cnt FROM
+        fl_data_party fd join
+        fl_data_approve fda on fd.id=fda.data_id join fl_project fp
+        on fda.project_id = fp.id  join fl_node_party
+        fnp on fnp.id=fd.node_id and fd.creator_id=#{creatorId} and fda.approve!=9
+        <if test="name != null ">
+            and fd.name like #{name}
+        </if>
+    </select>
+
+</mapper>

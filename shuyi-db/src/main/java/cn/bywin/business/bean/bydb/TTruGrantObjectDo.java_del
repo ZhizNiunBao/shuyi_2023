@@ -1,0 +1,142 @@
+package cn.bywin.business.bean.bydb;
+
+import cn.bywin.business.common.base.SidEntityDo;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.util.Date;
+
+@Data
+@Entity
+@Table(name = "t_tru_grant_object")
+public class TTruGrantObjectDo extends SidEntityDo {
+    /**
+     * 关联虚拟id
+     */
+    @ApiModelProperty(required = true, value = "关联虚拟id", hidden = true, example = "")
+    @Column(name = "rel_id")
+    private String relId;
+    /**
+     * 对象分类 db表 ds数据集
+     */
+    @ApiModelProperty(required = true, value = "对象分类 db表 ds数据集", hidden = true, example = "")
+    @Column(name = "stype")
+    private String stype;
+    /**
+     * 目录表id
+     */
+    @ApiModelProperty(required = true, value = "目录表id", hidden = true, example = "")
+    @Column(name = "object_id")
+    private String objectId;
+    /**
+     * 数据集id
+     */
+    @ApiModelProperty(required = true, value = "数据集id", hidden = true, example = "")
+    @Column(name = "dataset_id")
+    private String datasetId;
+    /**
+     * 
+     */
+    @ApiModelProperty(required = true, value = "", hidden = true, example = "")
+    @Column(name = "dc_id")
+    private String dcId;
+    /**
+     * 数据库id
+     */
+    @ApiModelProperty(required = true, value = "数据库id", hidden = true, example = "")
+    @Column(name = "db_id")
+    private String dbId;
+    /**
+     * 库id
+     */
+    @ApiModelProperty(required = true, value = "库id", hidden = true, example = "")
+    @Column(name = "schema_id")
+    private String schemaId;
+    /**
+     * 表名称
+     */
+    @ApiModelProperty(required = true, value = "表名称", hidden = true, example = "")
+    @Column(name = "obj_name")
+    private String objName;
+    /**
+     * 表完整名称
+     */
+    @ApiModelProperty(required = true, value = "表完整名称", hidden = true, example = "")
+    @Column(name = "obj_full_name")
+    private String objFullName;
+    /**
+     * 中文名称
+     */
+    @ApiModelProperty(required = true, value = "中文名称", hidden = true, example = "")
+    @Column(name = "obj_chn_name")
+    private String objChnName;
+    /**
+     * 归属帐号
+     */
+    @ApiModelProperty(required = true, value = "归属帐号", hidden = true, example = "")
+    @Column(name = "to_account")
+    private String toAccount;
+    /**
+     * 归属人
+     */
+    @ApiModelProperty(required = true, value = "归属人", hidden = true, example = "")
+    @Column(name = "to_chn_name")
+    private String toChnName;
+    /**
+     * 归属人部门编号
+     */
+    @ApiModelProperty(required = true, value = "归属人部门编号", hidden = true, example = "")
+    @Column(name = "to_dept_no")
+    private String toDeptNo;
+    /**
+     * 归属人部门名称
+     */
+    @ApiModelProperty(required = true, value = "归属人部门名称", hidden = true, example = "")
+    @Column(name = "to_dept_name")
+    private String toDeptName;
+    /**
+     * 授权时间
+     */
+    @ApiModelProperty(required = true, value = "授权时间", hidden = true, example = "")
+    @Column(name = "grant_time")
+    private Date grantTime;
+    /**
+     * 授权人帐号
+     */
+    @ApiModelProperty(required = true, value = "授权人帐号", hidden = true, example = "")
+    @Column(name = "from_account")
+    private String fromAccount;
+    /**
+     * 授权人
+     */
+    @ApiModelProperty(required = true, value = "授权人", hidden = true, example = "")
+    @Column(name = "from_chn_name")
+    private String fromChnName;
+    /**
+     * 申请id
+     */
+    @ApiModelProperty(required = true, value = "申请id", hidden = true, example = "")
+    @Column(name = "apply_id")
+    private String applyId;
+    /**
+     * 创建人ID
+     */
+    @ApiModelProperty(required = true, value = "创建人ID", hidden = true, example = "")
+    @Column(name = "creator_id")
+    private String creatorId;
+    /**
+     * 创建人帐号
+     */
+    @ApiModelProperty(required = true, value = "创建人帐号", hidden = true, example = "")
+    @Column(name = "creator_account")
+    private String creatorAccount;
+    /**
+     * 创建人姓名
+     */
+    @ApiModelProperty(required = true, value = "创建人姓名", hidden = true, example = "")
+    @Column(name = "creator_name")
+    private String creatorName;
+}

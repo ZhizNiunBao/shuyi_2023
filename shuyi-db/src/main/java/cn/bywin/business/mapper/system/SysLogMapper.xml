@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.system.SysLogMapper">
+    <sql id="Where_Column">
+
+        <if test="status != null  ">
+            and status = #{status}
+        </if>
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.system.SysLogDo">
+        SELECT * from sys_log
+        where 1=1
+        <include refid="Where_Column" />
+        order by status asc, created_time desc
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt from sys_log
+        where 1 =1
+        <include refid="Where_Column" />
+    </select>
+
+</mapper>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.olk.OlkObjectMapper">
+    <sql id="Where_Column">
+
+        <if test="objectName != null ">
+            and object_name like #{objectName}
+        </if>
+
+        <if test="qryCond != null ">
+            and ( object_name like #{qryCond} or obj_chn_name like #{qryCond} )
+        </if>
+
+        <if test="id != null ">
+            and id = #{id}
+        </if>
+
+        <if test="nodePartyId != null ">
+            and node_party_id = #{nodePartyId}
+        </if>
+
+        <if test="userId != null ">
+            and user_id= #{userId}
+        </if>
+
+        <if test="userAccount != null ">
+            and user_account= #{userAccount}
+        </if>
+
+        <if test="dbId != null ">
+            and db_id = #{dbId}
+        </if>
+
+        <if test="schemaId != null ">
+            and schema_id = #{schemaId}
+        </if>
+
+        <if test="creatorId != null ">
+            and creator_Id = #{creatorId}
+        </if>
+
+        <if test="enable != null ">
+            and enable = #{enable}
+        </if>
+
+        <if test="idList != null and idList.size() &gt; 0 ">
+            and id in
+            <foreach item="id" collection="idList" index="index" open="(" close= ")" separator=",">
+                #{id}
+            </foreach>
+
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.olk.TOlkObjectDo">
+        SELECT * from t_olk_object
+        where 1=1
+        <include refid="Where_Column" />
+        order by norder
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt from t_olk_object
+        where 1=1
+        <include refid="Where_Column" />
+    </select>
+
+    <sql id="userobjpriv_Column">
+    <if test="userObjPriv != null and userObjPriv == 1 ">
+        and (
+        ( a.share_flag = 2 and a.id in ( select data_id  from t_olk_data_node where  node_id = #{ownerNodeId} ) )
+        or ( a.share_flag =1) or ( a.share_flag = 0  and a.user_id = #{ownerUserId} ) )
+    </if>
+    </sql>
+
+    <select id="findNodeBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.view.olk.VOlkObjectVo">
+        SELECT a.*,'odb' scatalog
+        ,case when a.share_flag = 1 or data_id is not null or a.user_id =#{ownerUserId} then 1 else 0 end userObjPriv
+        ,c.db_name ,c.dbsource_id ,c.db_chn_name ,c.schema_name ,c.schema_chn_name ,node_party_name from t_olk_object a
+        inner join (    select bs.id scid, db.db_name ,db.dbsource_id ,db.db_chn_name ,bs.schema_name ,bs.schema_chn_name
+        from t_olk_database  db, t_olk_schema bs where db.id = bs.db_id  ) c
+        on a.schema_id = c.scid
+        left join (select id nodeId,name node_party_name  from fl_node_party) b
+        on a.node_party_id = b.nodeId
+        left join ( select data_id from fl_data_approve where approve = 1 and  creator_id =#{ownerUserId} ) n
+        on a.id = n.data_id
+        where a.enable =1
+        <include refid="userobjpriv_Column" />
+        <include refid="Where_Column" />
+        order by created_time desc
+        ${pageInfo}
+
+    </select>
+
+    <select id="findNodeBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt  from t_olk_object a
+        inner join (    select bs.id scid, db.db_name ,db.dbsource_id ,db.db_chn_name ,bs.schema_name ,bs.schema_chn_name
+        from t_olk_database  db, t_olk_schema bs where db.id = bs.db_id  ) c
+        on a.schema_id = c.scid
+        left join (select id nodeId,name node_party_name  from fl_node_party) b
+        on a.node_party_id = b.nodeId
+        left join ( select data_id from fl_data_approve where approve = 1 and  creator_id =#{ownerUserId} ) n
+        on a.id = n.data_id
+        where a.enable =1
+        <include refid="userobjpriv_Column" />
+        <include refid="Where_Column" />
+    </select>
+
+
+    <select id="findUserTable"    parameterType="Object"  resultType="cn.bywin.business.bean.view.olk.OlkObjectWithFieldsVo">
+        SELECT a.*
+          from t_olk_object a
+        inner join (    select bs.id scid, db.db_name ,db.dbsource_id ,db.db_chn_name ,bs.schema_name ,bs.schema_chn_name
+        from t_olk_database  db, t_olk_schema bs where db.id = bs.db_id  ) c
+        on a.schema_id = c.scid
+        left join (select id nodeId,name node_party_name  from fl_node_party) b
+        on a.node_party_id = b.nodeId
+        inner join ( select data_id from fl_data_approve where approve = 1 and  creator_id =#{grantUserId} ) n
+        on a.id = n.data_id
+        where a.enable =1
+        <include refid="Where_Column" />
+        order by created_time desc
+        ${pageInfo}
+
+    </select>
+
+
+</mapper>

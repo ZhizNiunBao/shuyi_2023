@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.olk.OlkModelMapper">
+    <sql id="Where_Column">
+
+        <if test="outputId != null ">
+            and output_id like #{outputId}
+        </if>
+        <if test="outputType != null ">
+            and output_type like #{outputType}
+        </if>
+        <if test="qryCond != null ">
+            AND ( name LIKE #{qryCond} )
+        </if>
+
+        <if test="id != null ">
+            and id = #{id}
+        </if>
+
+        <if test="folderId != null ">
+            and folder_id = #{folderId}
+        </if>
+
+        <if test="dcId != null ">
+            and dc_id = #{dcId}
+        </if>
+
+        <if test="config != null ">
+            and config = #{config}
+        </if>
+
+        <if test="name != null ">
+            and name = #{name}
+        </if>
+
+        <!--<if test="creatorId != null ">
+            and creator_Id = #{creatorId}
+        </if>-->
+        <if test="creatorAccount != null ">
+            and creator_account = #{creatorAccount}
+        </if>
+
+        <if test="createDeptNo != null ">
+            and create_dept_no = #{createDeptNo}
+        </if>
+
+        <if test="status != null ">
+            and status = #{status}
+            <if test="status!=9">
+                and status!=9
+            </if>
+        </if>
+        <if test="status == null">
+            and status!=9
+        </if>
+
+        <choose>
+            <when test=" cacheFlag == null ">
+
+            </when>
+            <when test=" cacheFlag == 0 ">
+                and ( cache_flag = 0  or cache_flag is null)
+            </when>
+            <otherwise>
+                and ( cache_flag = #{cacheFlag})
+            </otherwise>
+        </choose>
+
+    </sql>
+
+    <select id="findBeanList" parameterType="Object" resultType="cn.bywin.business.bean.olk.TOlkModelDo">
+        SELECT * from t_olk_model
+        where 1=1
+        <include refid="Where_Column"/>
+        order by modified_time desc
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from t_olk_model
+        where 1=1
+        <include refid="Where_Column"/>
+    </select>
+
+    <select id="statsByUser" parameterType="Object" resultType="Map">
+        SELECT cache_flag cacheflag,count(*) cnt from t_olk_model
+        where status!=9
+        <include refid="Where_Column"/>
+        group by cache_flag
+    </select>
+
+
+</mapper>

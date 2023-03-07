@@ -1,0 +1,76 @@
+package cn.bywin.business.service.bydb;
+
+
+import cn.bywin.business.bean.bydb.TTruApplyCheckDo;
+import cn.bywin.business.bean.bydb.TTruApplyObjectDo;
+import cn.bywin.business.bean.bydb.TTruGrantObjectDo;
+import cn.bywin.business.mapper.bydb.TruApplyCheckMapper;
+import cn.bywin.business.mapper.bydb.TruApplyObjectMapper;
+import cn.bywin.business.mapper.bydb.TruGrantObjectMapper;
+import cn.service.impl.BaseServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.common.Mapper;
+
+import java.util.List;
+
+
+@Service
+public class TruApplyObjectService extends BaseServiceImpl<TTruApplyObjectDo, String> {
+
+	@Autowired
+	private TruApplyObjectMapper commMapper;
+
+	@Autowired
+	private TruGrantObjectMapper grantMapper;
+
+	@Autowired
+	private TruApplyCheckMapper checkMapper;
+
+	@Override
+	public Mapper<TTruApplyObjectDo> getMapper() {
+		return commMapper;
+	}
+
+	public List<TTruApplyObjectDo> findBeanList( TTruApplyObjectDo bean){
+		return  commMapper.findBeanList(bean);
+	}
+
+	public long findBeanCnt( TTruApplyObjectDo bean){
+		return  commMapper.findBeanCnt(bean);
+	}
+
+	public List<TTruApplyObjectDo> findUnfinished( String datasetId){
+		return commMapper.findUnfinished( datasetId );
+	}
+
+	public long deleteByDatasetId(String datasetId ){
+		return commMapper.deleteByDatasetId( datasetId );
+	}
+
+	@Transactional(rollbackFor=Exception.class)
+	public long deleteWithOther( List<TTruApplyObjectDo> applyList, List<TTruApplyCheckDo> checkList, List<TTruGrantObjectDo> grantList ){
+		if( grantList != null ){
+			for ( TTruGrantObjectDo grantDo : grantList) {
+				grantMapper.deleteByPrimaryKey( grantDo.getId() );
+			}
+
+		}
+		if( checkList != null ){
+			for ( TTruApplyCheckDo checkDo : checkList) {
+				checkMapper.deleteByPrimaryKey( checkDo.getId() );
+			}
+
+		}
+		if( applyList != null ){
+			for ( TTruApplyObjectDo applyDo : applyList) {
+				commMapper.deleteByPrimaryKey( applyDo.getId() );
+			}
+
+		}
+
+		return  1;
+	}
+
+}

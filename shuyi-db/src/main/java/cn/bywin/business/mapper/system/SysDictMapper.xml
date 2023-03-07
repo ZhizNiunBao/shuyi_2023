@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.system.SysDictMapper">
+    <sql id="Where_Column">
+
+        <if test="dictCode != null ">
+            and dict_Code like #{dictCode}
+        </if>
+
+        <if test="dictName != null ">
+            and dict_Name = #{dictName}
+        </if>
+        <choose>
+            <when test="pid == null or pid.length() == 0 or pid == '#NULL#'.toString() ">
+                and ( pid is null )
+            </when>
+            <when test="pid != null and pid == '#ALL#'.toString() ">
+
+            </when>
+
+            <when test="pid != null and pid !='#NULL#'.toString() ">
+                and pid =#{pid}
+            </when>
+
+        </choose>
+
+        <if test="qryCond != null ">
+            and ( dict_Code like #{qryCond} or dict_Name like #{qryCond}   )
+        </if>
+
+        <if test="creatorId != null ">
+            and creator_Id = #{creatorId}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.system.SysDictDo">
+        SELECT * from sys_dict
+        where 1=1
+        <include refid="Where_Column" />
+        order by dict_order ,dict_code
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt from sys_dict
+        where 1=1
+        <include refid="Where_Column" />
+    </select>
+
+</mapper>

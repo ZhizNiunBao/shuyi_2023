@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.bydb.TruGrantObjectMapper">
+    <sql id="Where_Column">
+
+        <if test="qryCond != null ">
+            AND ( obj_name LIKE #{qryCond} or obj_chn_name LIKE #{qryCond}  )
+        </if>
+
+        <if test="dcId != null ">
+            AND dc_id = #{dcId}
+        </if>
+
+        <if test="id != null ">
+            AND id = #{id}
+        </if>
+
+        <if test="toAccount != null ">
+            AND to_account = #{toAccount}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.bydb.TTruGrantObjectDo">
+        SELECT * FROM t_tru_grant_object
+        <where>
+            <include refid="Where_Column" />
+        </where>
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt FROM t_tru_grant_object
+        <where>
+            <include refid="Where_Column" />
+        </where>
+    </select>
+
+
+</mapper>

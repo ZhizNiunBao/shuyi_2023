@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.federal.NodePartyMapper">
+
+    <sql id="Where_Column">
+        <if test="creatorId != null ">
+            and creator_Id = #{creatorId}
+        </if>
+        <if test="id != null ">
+            and id != #{id}
+        </if>
+        <if test="name != null ">
+            and name like #{name}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.federal.FNodePartyDo">
+        SELECT a.* from fl_node_party a
+        where 1=1
+        <include refid="Where_Column" />
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findBeanCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from fl_node_party a
+        where 1=1
+        <include refid="Where_Column" />
+    </select>
+
+    <select id="findNodePartyViewList"    parameterType="Object"  resultType="cn.bywin.business.bean.view.federal.NodePartyView">
+        SELECT a.*,data_party_cnt from fl_node_party a left join(
+        select count(*) data_party_cnt ,node_id nid  from  fl_data_party  group  by node_id ) b on a.id =b.nid
+        where is_status =0
+        <include refid="Where_Column" />
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findByIds"     resultType="Object">
+        SELECT party_id FROM fl_node_party where  id in
+        <foreach item="id" collection="ids" index="index" open="(" close= ")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findByAllIds"     resultType="cn.bywin.business.bean.federal.FNodePartyDo">
+        SELECT * FROM fl_node_party where  id in
+        <foreach item="id" collection="ids" index="index" open="(" close= ")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+</mapper>

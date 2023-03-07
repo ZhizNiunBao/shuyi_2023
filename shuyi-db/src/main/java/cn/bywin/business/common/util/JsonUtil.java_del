@@ -1,0 +1,168 @@
+package cn.common.util;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import org.apache.commons.lang3.StringUtils;
+
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class JsonUtil {
+
+    public static final ObjectMapper INSTANCE = new ObjectMapper();
+    public static final ObjectMapper PASCAL_CASE_INSTANCE;
+
+    public JsonUtil() {
+    }
+
+    public static JSONObject string2Json(String str){
+        return JSON.parseObject(str);
+    }
+
+    public static JSONArray string2JSONArray(String str){
+        return JSON.parseArray(str);
+    }
+
+    public static JSONObject object2Json(Object obj){
+        return (JSONObject) JSONObject.toJSON(obj);
+    }
+
+    public static String serialize(Object object) {
+        try {
+            String value = INSTANCE.writeValueAsString(object);
+            return value;
+        } catch (JsonProcessingException var3) {
+            throw new RuntimeException(var3);
+        }
+    }
+
+    public static <T> T deserialize(String json, Class<T> clazz) {
+        Object object = null;
+
+        try {
+            object = INSTANCE.readValue(json, TypeFactory.rawClass(clazz));
+            return (T) object;
+        } catch (JsonProcessingException var4) {
+            throw new RuntimeException(var4);
+        } catch (IOException var5) {
+            throw new UncheckedIOException(var5);
+        }
+    }
+
+    static {
+        INSTANCE.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        PASCAL_CASE_INSTANCE = new ObjectMapper();
+        PASCAL_CASE_INSTANCE.setPropertyNamingStrategy(new PropertyNamingStrategy.PropertyNamingStrategyBase() {
+            @Override
+            public String translate(String propertyName) {
+                return StringUtils.capitalize(propertyName);
+            }
+        });
+    }
+
+    /**
+     * @param object
+     *             任意对象
+     * @return java.lang.String
+     */
+    public static String objectToJson(Object object) {
+        StringBuilder json = new StringBuilder();
+        if (object == null) {
+            json.append("\"\"");
+        } else if (object instanceof String || object instanceof Integer) {
+            json.append("\"").append(object.toString()).append("\"");
+        } else {
+            json.append(beanToJson(object));
+        }
+        return json.toString();
+    }
+
+    /**
+     * 功能描述:传入任意一个 javabean 对象生成一个指定规格的字符串
+     *
+     * @param bean
+     *             bean对象
+     * @return String
+     */
+    public static String beanToJson(Object bean) {
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        PropertyDescriptor[] props = null;
+        try {
+            props = Introspector.getBeanInfo(bean.getClass(), Object.class)
+                    .getPropertyDescriptors();
+        } catch (IntrospectionException e) {
+        }
+        if (props != null) {
+            for (int i = 0; i < props.length; i++) {
+                try {
+                    String name = objectToJson(props[i].getName());
+                    String value = objectToJson(props[i].getReadMethod().invoke(bean));
+                    json.append(name);
+                    json.append(":");
+                    json.append(value);
+                    json.append(",");
+                } catch (Exception e) {
+                }
+            }
+            json.setCharAt(json.length() - 1, '}');
+        } else {
+            json.append("}");
+        }
+        return json.toString();
+    }
+
+    /**
+     * 功能描述:通过传入一个列表对象,调用指定方法将列表中的数据生成一个JSON规格指定字符串
+     *
+     * @param list
+     *             列表对象
+     * @return java.lang.String
+     */
+    public static String listToJson(List<?> list) {
+        StringBuilder json = new StringBuilder();
+        json.append("[");
+        if (list != null && list.size() > 0) {
+            for (Object obj : list) {
+                json.append(objectToJson(obj));
+                json.append(",");
+            }
+            json.setCharAt(json.length() - 1, ']');
+        } else {
+            json.append("]");
+        }
+        return json.toString();
+    }
+
+
+    public static void main(String[] args) {
+
+          List<String> tabList = new ArrayList<>();
+        tabList.add("{source={key=ield1,}, target={key=field5}}");
+
+        Map<String, Object> d= new HashMap<>();
+        Map<String, Object> d1= new HashMap<>();
+        Map<String, Object> d2= new HashMap<>();
+        d1.put("key","ield1");
+        d2.put("key","field5");
+        d.put("source",d1);
+        d.put("target",d2);
+        String re=JSON.toJSONString(d);
+        System.out.println(re);
+
+    }
+
+}

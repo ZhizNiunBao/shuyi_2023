@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.bydb.BydbLogMapper">
+    <sql id="Where_Column">
+        <if test="queryId != null ">
+            and query_id = #{queryId}
+        </if>
+        <if test="hostname != null ">
+            and hostname = #{hostname}
+        </if>
+        <if test="userIp != null ">
+            and user_ip = #{userIp}
+        </if>
+        <if test="userName != null ">
+            and user_name = #{userName}
+        </if>
+        <if test="messageStatus != null ">
+            and message_status = #{messageStatus}
+        </if>
+        <if test="sdt1 != null ">
+            and created_time &gt;= #{sdt1}
+        </if>
+        <if test="edt1 != null ">
+            and created_time &lt;#{edt1}
+        </if>
+        <if test="qryCond != null ">
+            and  message LIKE #{qryCond}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.bydb.TBydbLogDo">
+        select * from t_bydb_log
+        where 1=1
+        <include refid="Where_Column" />
+        order by created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        select count(*) cnt from t_bydb_log
+        where 1=1
+        <include refid="Where_Column" />
+    </select>
+
+
+</mapper>

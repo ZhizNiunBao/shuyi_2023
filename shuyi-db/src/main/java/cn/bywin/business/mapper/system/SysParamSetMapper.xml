@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.system.SysParamSetMapper">
+    <sql id="Where_Column">
+
+        <if test="paraCode != null ">
+            and para_Code like #{paraCode}
+        </if>
+
+        <if test="paraName != null ">
+            and para_Name = #{paraName}
+        </if>
+
+        <if test="paraValue != null ">
+            and para_Value like #{paraValue}
+        </if>
+
+        <if test="typeId != null ">
+            and type_Id = #{typeId}
+        </if>
+
+        <if test="qryCond != null ">
+            and ( para_Code like #{qryCond} or para_Name like #{qryCond} or para_Value like #{qryCond} )
+        </if>
+
+        <if test="creatorId != null ">
+            and creator_Id = #{creatorId}
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.system.SysParamSetDo">
+        SELECT * from sys_param_set
+        where 1=1
+        <include refid="Where_Column" />
+        order by type_id,para_order ,para_code
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt from sys_param_set
+        where 1=1
+        <include refid="Where_Column" />
+    </select>
+
+</mapper>

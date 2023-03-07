@@ -1,0 +1,88 @@
+package cn.bywin.business.bean.bydb;
+
+import cn.bywin.business.common.base.SidEntityDo;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.util.Date;
+
+@Data
+@Entity
+@Table(name = "t_tru_apply_check")
+public class TTruApplyCheckDo extends SidEntityDo {
+    /**
+     * 申请id
+     */
+    @ApiModelProperty(required = true, value = "申请id", hidden = true, example = "")
+    @Column(name = "apply_id")
+    private String applyId;
+    /**
+     * 状态 1通过 2拒绝 3撤回
+     */
+    @ApiModelProperty(required = true, value = "状态 1通过 2拒绝 3撤回", hidden = false, example = "")
+    @Column(name = "check_status")
+    private Integer checkStatus;
+    /**
+     * 审批帐号
+     */
+    @ApiModelProperty(required = true, value = "审批帐号", hidden = false, example = "")
+    @Column(name = "check_account")
+    private String checkAccount;
+    /**
+     * 审批人
+     */
+    @ApiModelProperty(required = true, value = "审批人", hidden = true, example = "")
+    @Column(name = "check_chn_name")
+    private String checkChnName;
+    /**
+     * 审批人部门编号
+     */
+    @ApiModelProperty(required = true, value = "审批人部门编号", hidden = true, example = "")
+    @Column(name = "check_dept_no")
+    private String checkDeptNo;
+    /**
+     * 审批人部门名称
+     */
+    @ApiModelProperty(required = true, value = "审批人部门名称", hidden = true, example = "")
+    @Column(name = "check_dept_name")
+    private String checkDeptName;
+    /**
+     * 审批时间
+     */
+    @ApiModelProperty(required = true, value = "审批时间", hidden = false, example = "")
+    @Column(name = "check_time")
+    private Date checkTime;
+    /**
+     * 审批说明
+     */
+    @ApiModelProperty(required = true, value = "审批说明", hidden = false, example = "")
+    @Column(name = "check_remark")
+    private String checkRemark;
+    /**
+     * 撤回到的节点key
+     */
+    @ApiModelProperty(required = true, value = "撤回到的节点key", hidden = true, example = "")
+    @Column(name = "reject_task_key")
+    private String rejectTaskKey;
+    /**
+     * 创建人ID
+     */
+    @ApiModelProperty(required = true, value = "创建人ID", hidden = true, example = "")
+    @Column(name = "creator_id")
+    private String creatorId;
+    /**
+     * 创建人帐号
+     */
+    @ApiModelProperty(required = true, value = "创建人帐号", hidden = true, example = "")
+    @Column(name = "creator_account")
+    private String creatorAccount;
+    /**
+     * 创建人姓名
+     */
+    @ApiModelProperty(required = true, value = "创建人姓名", hidden = true, example = "")
+    @Column(name = "creator_name")
+    private String creatorName;
+}

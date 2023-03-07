@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.bydb.TruModelElementJobMapper">
+    <sql id="Where_Column">
+
+
+        <if test="id != null ">
+            and id = #{id}
+        </if>
+
+        <if test="name != null ">
+            and name = #{name}
+        </if>
+
+        <if test="creatorId != null ">
+            and creator_Id = #{creatorId}
+        </if>
+
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.bydb.TTruModelElementJobDo">
+        SELECT * from t_tru_model_element_job
+        where 1=1
+        <include refid="Where_Column" />
+        order by created_time desc
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt from t_tru_model_element_job
+        where 1=1
+        <include refid="Where_Column" />
+    </select>
+
+
+
+</mapper>

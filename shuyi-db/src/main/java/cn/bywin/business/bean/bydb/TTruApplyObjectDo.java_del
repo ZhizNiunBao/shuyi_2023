@@ -1,0 +1,223 @@
+package cn.bywin.business.bean.bydb;
+
+import cn.bywin.business.common.base.SidEntityDo;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.util.Date;
+
+@Data
+@Entity
+@Table(name = "t_tru_apply_object")
+public class TTruApplyObjectDo extends SidEntityDo {
+    /**
+     * 关联虚拟id
+     */
+    @ApiModelProperty(required = true, value = "关联虚拟id", hidden = true, example = "")
+    @Column(name = "rel_id")
+    private String relId;
+    /**
+     * 对象分类 db表 ds数据集
+     */
+    @ApiModelProperty(required = true, value = "对象分类 db表 ds数据集", hidden = true, example = "")
+    @Column(name = "stype")
+    private String stype;
+
+    /**
+     * 节点id
+     */
+    @ApiModelProperty(required = false, value = "节点id", hidden = false, example = "")
+    @Column(name = "node_party_id")
+    private String nodePartyId;
+    /**
+     * 上传标志 1已上传 3待上传
+     */
+    @ApiModelProperty(required = false, value = "上传标志 1已上传 3待上传", hidden = false, example = "")
+    @Column(name = "syn_flag")
+    private Integer synFlag;
+
+    /**
+     * 目录表id
+     */
+    @ApiModelProperty(required = true, value = "目录表id", hidden = true, example = "")
+    @Column(name = "object_id")
+    private String objectId;
+    /**
+     * 数据集id
+     */
+    @ApiModelProperty(required = true, value = "数据集id", hidden = true, example = "")
+    @Column(name = "dataset_id")
+    private String datasetId;
+    /**
+     * 
+     */
+//    @ApiModelProperty(required = true, value = "", hidden = true, example = "")
+//    @Column(name = "dc_id")
+//    private String dcId;
+    /**
+     * 数据库id
+     */
+    @ApiModelProperty(required = true, value = "数据库id", hidden = true, example = "")
+    @Column(name = "db_id")
+    private String dbId;
+    /**
+     * 库id
+     */
+    @ApiModelProperty(required = true, value = "库id", hidden = true, example = "")
+    @Column(name = "schema_id")
+    private String schemaId;
+    /**
+     * 表名称
+     */
+    @ApiModelProperty(required = true, value = "表名称", hidden = true, example = "")
+    @Column(name = "obj_name")
+    private String objName;
+    /**
+     * 表完整名称
+     */
+    @ApiModelProperty(required = true, value = "表完整名称", hidden = true, example = "")
+    @Column(name = "obj_full_name")
+    private String objFullName;
+    /**
+     * 中文名称
+     */
+    @ApiModelProperty(required = true, value = "中文名称", hidden = true, example = "")
+    @Column(name = "obj_chn_name")
+    private String objChnName;
+    /**
+     * 申请帐号
+     */
+    @ApiModelProperty(required = true, value = "申请帐号", hidden = true, example = "")
+    @Column(name = "apply_account")
+    private String applyAccount;
+    /**
+     * 申请人
+     */
+    @ApiModelProperty(required = true, value = "申请人", hidden = true, example = "")
+    @Column(name = "apply_chn_name")
+    private String applyChnName;
+    /**
+     * 申请人部门编号
+     */
+    @ApiModelProperty(required = true, value = "申请人部门编号", hidden = true, example = "")
+    @Column(name = "apply_dept_no")
+    private String applyDeptNo;
+    /**
+     * 申请人部门名称
+     */
+    @ApiModelProperty(required = true, value = "申请人部门名称", hidden = true, example = "")
+    @Column(name = "apply_dept_name")
+    private String applyDeptName;
+    /**
+     * 申请时间
+     */
+    @ApiModelProperty(required = true, value = "申请时间", hidden = true, example = "")
+    @Column(name = "apply_time")
+    private Date applyTime;
+    /**
+     * 审批说明
+     */
+    @ApiModelProperty(required = true, value = "审批说明", hidden = true, example = "")
+    @Column(name = "apply_note")
+    private String applyNote;
+    /**
+     * 状态 1通过 2拒绝 3取消申请 21申请 22审批中
+     */
+    @ApiModelProperty(required = true, value = "状态 1通过 2拒绝 3取消申请 21申请 22审批中", hidden = true, example = "")
+    @Column(name = "status")
+    private Integer status;
+    /**
+     * 审批帐号
+     */
+    @ApiModelProperty(required = true, value = "审批帐号", hidden = true, example = "")
+    @Column(name = "check_account")
+    private String checkAccount;
+    /**
+     * 审批人
+     */
+    @ApiModelProperty(required = true, value = "审批人", hidden = true, example = "")
+    @Column(name = "check_chn_name")
+    private String checkChnName;
+    /**
+     * 审批人部门编号
+     */
+    @ApiModelProperty(required = true, value = "审批人部门编号", hidden = true, example = "")
+    @Column(name = "check_dept_no")
+    private String checkDeptNo;
+    /**
+     * 审批人部门名称
+     */
+    @ApiModelProperty(required = true, value = "审批人部门名称", hidden = true, example = "")
+    @Column(name = "check_dept_name")
+    private String checkDeptName;
+
+    /**
+     * 审批时间
+     */
+    @ApiModelProperty(required = true, value = "审批时间", hidden = true, example = "")
+    @Column(name = "check_time")
+    private Date checkTime;
+    /**
+     * 审批说明
+     */
+    @ApiModelProperty(required = true, value = "审批说明", hidden = true, example = "")
+    @Column(name = "check_remark")
+    private String checkRemark;
+    /**
+     * 流程实例id
+     */
+    @ApiModelProperty(required = true, value = "流程实例id", hidden = true, example = "")
+    @Column(name = "process_instance_id")
+    private String processInstanceId;
+    /**
+     * 流程任务id
+     */
+    @ApiModelProperty(required = true, value = "流程任务id", hidden = true, example = "")
+    @Column(name = "task_id")
+    private String taskId;
+    /**
+     * 流程任务名称
+     */
+    @ApiModelProperty(required = true, value = "流程任务名称", hidden = true, example = "")
+    @Column(name = "task_name")
+    private String taskName;
+    /**
+     * 候选人账号
+     */
+    @ApiModelProperty(required = true, value = "候选人账号", hidden = true, example = "")
+    @Column(name = "candidate_user")
+    private String candidateUser;
+    /**
+     * 候选人名词
+     */
+    @ApiModelProperty(required = true, value = "候选人名词", hidden = true, example = "")
+    @Column(name = "candidate_nick_name")
+    private String candidateNickName;
+    /**
+     * 候选人角色
+     */
+    @ApiModelProperty(required = true, value = "候选人角色", hidden = true, example = "")
+    @Column(name = "candidate_role")
+    private String candidateRole;
+    /**
+     * 创建人ID
+     */
+    @ApiModelProperty(required = true, value = "创建人ID", hidden = true, example = "")
+    @Column(name = "creator_id")
+    private String creatorId;
+    /**
+     * 创建人帐号
+     */
+    @ApiModelProperty(required = true, value = "创建人帐号", hidden = true, example = "")
+    @Column(name = "creator_account")
+    private String creatorAccount;
+    /**
+     * 创建人姓名
+     */
+    @ApiModelProperty(required = true, value = "创建人姓名", hidden = true, example = "")
+    @Column(name = "creator_name")
+    private String creatorName;
+}

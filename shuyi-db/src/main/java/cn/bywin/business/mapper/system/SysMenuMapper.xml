@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.system.SysMenuMapper">
+    <sql id="Where_Column">
+
+        <if test="menuName != null ">
+            and menu_name like  #{menuName}
+        </if>
+        <if test="menuCode != null ">
+            and menu_code =  #{menuCode}
+        </if>
+        <if test="showFlag != null ">
+            and show_flag =  #{showFlag}
+        </if>
+        <if test="menuType != null ">
+            and menu_type =  #{menuType}
+        </if>
+        <if test="creatorId != null ">
+            and creator_Id = #{creatorId}
+        </if>
+        <if test="url != null ">
+            and url = #{url}
+        </if>
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.system.SysMenuDo">
+        SELECT * from sys_menu
+        where 1=1
+        <include refid="Where_Column" />
+        order by created_time desc ,menu_order
+
+        ${pageInfo}
+
+    </select>
+
+    <select id="findBeanListAll"    parameterType="Object"  resultType="cn.bywin.business.bean.system.SysMenuDo">
+        SELECT * from sys_menu
+        where 1=1
+        <include refid="Where_Column" />
+
+    </select>
+    <select id="findBeanCnt"    parameterType="Object"  resultType="Long">
+        SELECT count(*) cnt from sys_menu
+        where 1=1
+        <include refid="Where_Column" />
+    </select>
+
+
+
+
+    <select id="userSubMenuId"    parameterType="Object"  resultType="cn.bywin.business.bean.system.SysMenuDo">
+        select * from sys_menu sm where sm.pid =#{pid} and sm.show_flag=1
+        <if test="menuType != null ">
+            and menu_type=#{menuType}
+        </if>
+             and id in(select menu_id  from sys_role_menu srm , sys_user_role sur where srm.role_id =sur.role_id and sur.user_id=#{userId}
+                UNION
+                select id from sys_menu where EXISTS ( select user_id  from sys_user_role sur where role_id ='flsystem' and user_id=#{userId} )
+                )
+               order by sm.menu_order
+    </select>
+</mapper>

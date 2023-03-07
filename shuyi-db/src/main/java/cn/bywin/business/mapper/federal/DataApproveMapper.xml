@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.bywin.business.mapper.federal.DataApproveMapper">
+
+    <sql id="Where_Column">
+        <if test="projectId != null ">
+            and a.project_id = #{projectId}
+        </if>
+        <if test="dataId != null ">
+            and a.data_id = #{dataId}
+        </if>
+        <if test="nodeId != null ">
+            and a.node_id = #{nodeId}
+        </if>
+        <if test="userId != null ">
+            and a.user_id = #{userId}
+        </if>
+        <if test="approve != null ">
+            and a.approve = #{approve}
+        </if>
+        <if test="creatorId != null ">
+            and a.creator_id = #{creatorId}
+        </if>
+        <if test="dataName != null ">
+            and d.name like #{dataName}
+        </if>
+        <if test="dataId != null ">
+            and a.data_id = #{dataId}
+        </if>
+        <if test="id != null ">
+            and a.id = #{id}
+        </if>
+
+        <if test="other1 != null and other1.length &gt; 0 ">
+            and data_id in
+            <foreach item="id" collection="other1" index="index" open="(" close= ")" separator=",">
+                #{id}
+            </foreach>
+
+        </if>
+
+    </sql>
+
+    <select id="findBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.view.federal.FDataApproveVo">
+        SELECT a.id, a.project_id, a.node_id, a.data_id, a.data_catalog, a.content, a.approval, a.approve, a.user_id, a.types, a.user_name, a.creator_id,  a.created_time, a.modified_time
+        ,n.name as nodeName,d.name as dataName,fp.name as projectName
+        ,unp.creator_account, unp.creator_name,unp.createUserRegTime,unp.createUserLock,unp.createNodePartyId, unp.createNodePartyName
+        from fl_data_approve a left join fl_node_party n on n.id=a.node_id
+        left join( select u.id createuid, u.mobile creator_account, u.username creator_name,u.reg_time createUserRegTime,u.is_lock createUserLock,u.node_party_id createNodePartyId, np.name createNodePartyName  from  sys_user u, fl_node_party np where u.node_party_id  = np.id ) unp
+        on a.creator_id = unp.createuid
+        left join
+        (select id,name from fl_data_party
+        union all
+        select id,object_name name from t_bydb_object
+        union all
+        select id,object_name name from t_olk_object ) d on d.id=a.data_id left  join
+        (
+        select id,name from fl_project
+        union all
+        select id ,name from t_tru_model
+        union all
+        select id ,name from t_olk_model
+        ) as fp on fp.id = a.project_id
+        where 1=1  and a.approve!=9
+        <include refid="Where_Column" />
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findBydbBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.view.federal.FDataApproveVo">
+        SELECT a.id, a.project_id, a.node_id, a.data_id, a.data_catalog, a.content, a.approval, a.approve, a.user_id, a.types, a.user_name, a.creator_id,  a.created_time, a.modified_time
+        ,n.name as nodeName,d.name as dataName,fp.name as projectName
+        ,unp.creator_account, unp.creator_name,unp.createUserRegTime,unp.createUserLock,unp.createNodePartyId, unp.createNodePartyName
+        from fl_data_approve a left join fl_node_party n on n.id=a.node_id
+        left join( select u.id createuid, u.mobile creator_account, u.username creator_name,u.reg_time createUserRegTime,u.is_lock createUserLock,u.node_party_id createNodePartyId, np.name createNodePartyName  from  sys_user u, fl_node_party np where u.node_party_id  = np.id ) unp
+        on a.creator_id = unp.createuid
+        left join
+        ( select id,object_name name from t_bydb_object  ) d on d.id=a.data_id left  join
+        ( select id ,name from t_tru_model ) as fp on fp.id = a.project_id
+        where 1=1 and a.approve!=9
+        <include refid="Where_Column" />
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findOlkBeanList"    parameterType="Object"  resultType="cn.bywin.business.bean.view.federal.FDataApproveVo">
+        SELECT a.id, a.project_id, a.node_id, a.data_id, a.data_catalog, a.content, a.approval, a.approve, a.user_id, a.types, a.user_name, a.creator_id,  a.created_time, a.modified_time
+        ,n.name as nodeName,d.name as dataName,fp.name as projectName
+        ,unp.creator_account, unp.creator_name,unp.createUserRegTime,unp.createUserLock,unp.createNodePartyId, unp.createNodePartyName
+        from fl_data_approve a left join fl_node_party n on n.id=a.node_id
+        left join( select u.id createuid, u.mobile creator_account, u.username creator_name,u.reg_time createUserRegTime,u.is_lock createUserLock,u.node_party_id createNodePartyId, np.name createNodePartyName  from  sys_user u, fl_node_party np where u.node_party_id  = np.id ) unp
+        on a.creator_id = unp.createuid
+        left join
+        ( select id,object_name name from t_olk_object ) d on d.id=a.data_id left  join
+        ( select id ,name from t_olk_model ) as fp on fp.id = a.project_id
+        where 1=1 and a.approve!=9
+        <include refid="Where_Column" />
+        order by a.created_time desc
+        ${pageInfo}
+    </select>
+
+    <select id="findBeanCnt" parameterType="Object" resultType="Long">
+        SELECT count(*) cnt from fl_data_approve a left join fl_node_party n on n.id=a.node_id
+        left join fl_data_party d on d.id=a.data_id
+        where 1=1 and a.approve!=9
+        <include refid="Where_Column" />
+    </select>
+
+
+    <select id="selectByProjectDataIds"     resultType="cn.bywin.business.bean.federal.FDataApproveDo">
+        SELECT * FROM fl_data_approve   where approve!=9 and project_id= #{projectId} and node_id=#{nodeId}
+        and data_id in
+        <foreach item="id" collection="ids" index="index" open="(" close= ")" separator=",">
+            #{id}
+        </foreach>
+        order by d.created_time desc
+    </select>
+</mapper>
