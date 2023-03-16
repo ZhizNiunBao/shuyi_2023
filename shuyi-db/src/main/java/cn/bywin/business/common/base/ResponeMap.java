@@ -1,5 +1,6 @@
 package cn.bywin.business.common.base;
 
+import cn.bywin.business.common.enums.ErrorCodeConstants;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,8 +9,9 @@ import java.util.Map;
 
 public class ResponeMap implements Serializable {
 	public final String resultFlag = "success";
-	public final String msgFlag = "msg";
+	public final String msgFlag = "message";
 	private final String defMsg = "操作失败！";
+	private final String codeFlag = "code";
 	private final Map<String, Object> resultMap = new HashMap<>();
 
 	private long startSpend = System.currentTimeMillis();
@@ -18,6 +20,7 @@ public class ResponeMap implements Serializable {
 		resultMap.clear();
 		resultMap.put(resultFlag, false);
 		resultMap.put(msgFlag, defMsg);
+		resultMap.put(codeFlag, ErrorCodeConstants.SUCCESS.getCode());
 		resultMap.put("data", new ArrayList<>());//
 		resultMap.put("total", 0);// 总记录数
 	}
@@ -26,6 +29,7 @@ public class ResponeMap implements Serializable {
 		resultMap.clear();
 		resultMap.put(resultFlag, false);
 		resultMap.put(msgFlag, msg);
+		resultMap.put(codeFlag, ErrorCodeConstants.SUCCESS.getCode());
 		resultMap.put("data", new ArrayList<>());//
 		resultMap.put("total", 0);// 总记录数
 	}
@@ -67,6 +71,7 @@ public class ResponeMap implements Serializable {
 	public ResponeMap setErr(String msg) {
 		resultMap.put(resultFlag, false);
 		resultMap.put(msgFlag, msg);
+		resultMap.put(codeFlag, ErrorCodeConstants.ERROR.getCode());
 		return this;
 	}
 
