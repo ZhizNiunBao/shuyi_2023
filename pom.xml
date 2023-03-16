@@ -24,6 +24,7 @@
   </modules>
 
   <properties>
+    <server.version>1.0.0</server.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <encoding>UTF-8</encoding>
@@ -91,6 +92,26 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>cn.bywin</groupId>
+        <artifactId>auth-bydata</artifactId>
+        <version>${server.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.bywin</groupId>
+        <artifactId>shuyi-db</artifactId>
+        <version>${server.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.bywin</groupId>
+        <artifactId>shuyi-pms</artifactId>
+        <version>${server.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.bywin</groupId>
+        <artifactId>shuyi-server</artifactId>
+        <version>${server.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.projectlombok</groupId>

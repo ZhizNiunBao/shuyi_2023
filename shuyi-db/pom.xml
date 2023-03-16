@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
     <artifactId>shuyi-db</artifactId>
-    <version>server-beta_1.0.2</version>
+    <version>1.0.0</version>
     <parent>
         <groupId>cn.bywin</groupId>
         <artifactId>shuyi_server_modaf</artifactId>
