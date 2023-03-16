@@ -18,7 +18,6 @@ import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
-import cn.bywin.business.job.BydbDataNodeJob;
 import cn.bywin.business.service.bydb.BydbDataNodeService;
 import cn.bywin.business.service.bydb.BydbDatabaseService;
 import cn.bywin.business.service.bydb.BydbFieldService;
@@ -196,11 +195,9 @@ public class BydbObjectController extends BaseController {
                 info.setSynFlag( 0 );
 
                 bydbObjectService.updateBeanWithFlag( updList, dbList, schemaList );
-                BydbDataNodeJob.addTable( info.getId() );
             }
             else{
                 bydbObjectService.updateBean( info );
-                BydbDataNodeJob.addTable( info.getId() );
             }
 
 //            HashMap<String, Object> map = new HashMap<>();
@@ -318,7 +315,6 @@ public class BydbObjectController extends BaseController {
             }
 
             bydbObjectService.updateBeanWithFlag( chgList, dbList, schemaList );
-            BydbDataNodeJob.reInit();
 
 //            for ( int i = 0; i < chgList.size(); i++ ) {
 //                TBydbObjectDo info = chgList.get( i );
@@ -700,14 +696,6 @@ public class BydbObjectController extends BaseController {
 //                    bydbObjectService.updateNoNull( tmp );
 //                }
             }
-            BydbDataNodeJob.addTableList( idList );
-
-//            if( info.getShareFlag() == 1){
-//                apiTruModelService.synDbsource( info );
-//            }
-
-            //new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).updateLog(ud, old, info, "修改-数据源");
-
             resMap.setOk( "保存成功" );
 
         }

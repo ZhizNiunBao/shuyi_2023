@@ -18,7 +18,6 @@ import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
 import cn.bywin.business.hetu.HetuJdbcOperate;
 import cn.bywin.business.hetu.HetuJdbcOperateComponent;
-import cn.bywin.business.job.BydbDataNodeJob;
 import cn.bywin.business.job.DbDataLoadThread;
 import cn.bywin.business.service.bydb.BydbCatalogTypeService;
 import cn.bywin.business.service.bydb.BydbDataNodeService;
@@ -270,7 +269,6 @@ public class BydbDatabaseController extends BaseController {
             info.setNorder(norder);
             info.setEnable(1);
 
-            BydbDataNodeJob.addDb( info.getId() );
 
             HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo(dcDo);
             boolean bexists = HetuDynamicCatalogUtil.checkCatalogExist( hetuInfo, info.getDbName() );
@@ -416,7 +414,6 @@ public class BydbDatabaseController extends BaseController {
             logger.error("刷新节点" + dcDo.getDcName() + "的" + dbInfo.getDcDbName() + "元数据数据失败", e);
         }
         redisTemplate.delete(redKey);
-        BydbDataNodeJob.reInit();
 
     }
 
@@ -675,7 +672,6 @@ public class BydbDatabaseController extends BaseController {
                 objTmp.setSynFlag( 0 );
                 objectService.updateNoNull( objTmp );
                 fieldService.saveOneObject(addFieldList, modFieldList, delFieldList);
-                BydbDataNodeJob.reInit();
 //                for (TBydbFieldDo fieldDo : addFieldList) {
 //                    new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).addLog(user, fieldDo, "新增-刷新bydb模式与对象");
 //                }
@@ -797,7 +793,6 @@ public class BydbDatabaseController extends BaseController {
             //success
             databaseService.insertBean(info);
             String redKey = bydbRef + info.getId();
-            BydbDataNodeJob.addDb(info.getId());
 
             DbDataLoadThread thread = new DbDataLoadThread(schemaService, objectService, fieldService, apiTruModelService, redisTemplate,
                     info, dbSourceDo, null, null,nodePartyDo, user, HttpRequestUtil.getAllIp(request));
@@ -891,7 +886,6 @@ public class BydbDatabaseController extends BaseController {
                 List<TBydbDatabaseDo> updList = new ArrayList<>();
                 updList.add(info);
                 databaseService.updateBeanWithFlag(updList);
-                BydbDataNodeJob.reInit();
             } else {
                 databaseService.updateBean(info);
             }
@@ -977,7 +971,6 @@ public class BydbDatabaseController extends BaseController {
             }
 
             databaseService.updateBeanWithFlag(dbList);
-            BydbDataNodeJob.reInit();
 
 //            for (int i = 0; i < dbList.size(); i++) {
 //                TBydbDatabaseDo info = dbList.get(i);

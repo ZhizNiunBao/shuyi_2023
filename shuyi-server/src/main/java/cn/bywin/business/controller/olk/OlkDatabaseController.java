@@ -31,7 +31,6 @@ import cn.bywin.business.hetu.HetuDynamicCatalogUtil;
 import cn.bywin.business.hetu.HetuInfo;
 import cn.bywin.business.hetu.HetuJdbcOperate;
 import cn.bywin.business.hetu.HetuJdbcOperateComponent;
-import cn.bywin.business.job.OlkDataNodeJob;
 import cn.bywin.business.service.federal.DataSourceService;
 import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.olk.OlkCatalogTypeService;
@@ -301,8 +300,6 @@ public class OlkDatabaseController extends BaseController {
             info.setNorder( norder );
             info.setEnable( 1 );
 
-            OlkDataNodeJob.addDb( info.getId() );
-
             HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
             boolean bexists = HetuDynamicCatalogUtil.checkCatalogExist( hetuInfo, info.getDbName() );
             if ( bexists ) {
@@ -358,7 +355,7 @@ public class OlkDatabaseController extends BaseController {
         BoundValueOperations<String, Object> bvo = redisTemplate.boundValueOps( redKey );
         //HashMap<String, String> schemaMap = new HashMap<>();
 
-        try ( HetuJdbcOperate jdbcOp = hetuJdbcOperateComponent.genHetuJdbcOperate( dcDo, user ) ) {
+        try ( HetuJdbcOperate jdbcOp = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo) ) {
 
             JsonObject noDealSchema = JsonUtil.toJsonObject( SysParamSetOp.readValue( "OlkNoDealSchema", "{}" ) );
             TOlkSchemaDo schTmp = new TOlkSchemaDo();
@@ -455,7 +452,6 @@ public class OlkDatabaseController extends BaseController {
             logger.error( "刷新节点" + dcDo.getDcName() + "的" + dbInfo.getDcDbName() + "元数据数据失败", e );
         }
         redisTemplate.delete( redKey );
-        OlkDataNodeJob.reInit();
 
     }
 
@@ -468,7 +464,7 @@ public class OlkDatabaseController extends BaseController {
 
         BoundValueOperations<String, Object> bvo = redisTemplate.boundValueOps( redKey );
         HashMap<String, String> schemaMap = new HashMap<>();
-        try ( HetuJdbcOperate jdbcOp = hetuJdbcOperateComponent.genHetuJdbcOperate( dcDo, user ) ) {
+        try ( HetuJdbcOperate jdbcOp = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo) ) {
 
             //某张表
             if ( objectInfo != null ) {
@@ -723,17 +719,6 @@ public class OlkDatabaseController extends BaseController {
                 objTmp.setSynFlag( 0 );
                 objectService.updateNoNull( objTmp );
                 fieldService.saveOneObject( addFieldList, modFieldList, delFieldList );
-                OlkDataNodeJob.reInit();
-//                for (TOlkFieldDo fieldDo : addFieldList) {
-//                    new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).addLog(user, fieldDo, "新增-刷新olk模式与对象");
-//                }
-//                for (TOlkFieldDo fieldDo : modFieldList) {
-//                    TOlkFieldDo old = modMap.get(fieldDo.getId());
-//                    new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).updateLog(user, old, fieldDo, "修改-刷新olk模式与对象");
-//                }
-//                for (TOlkFieldDo fieldDo : addFieldList) {
-//                    new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).delLog(user, fieldDo, "删除-刷新olk模式与对象");
-//                }
             }
         }
         catch ( Exception e ) {
@@ -824,7 +809,6 @@ public class OlkDatabaseController extends BaseController {
                 List<TOlkDatabaseDo> updList = new ArrayList<>();
                 updList.add( info );
                 databaseService.updateBeanWithFlag( updList );
-                OlkDataNodeJob.reInit();
             }
             else {
                 databaseService.updateBean( info );
@@ -922,13 +906,6 @@ public class OlkDatabaseController extends BaseController {
             }
 
             databaseService.updateBeanWithFlag( dbList );
-            OlkDataNodeJob.reInit();
-
-//            for (int i = 0; i < dbList.size(); i++) {
-//                TOlkDatabaseDo info = dbList.get(i);
-//                TOlkDatabaseDo old = oldList.get(i);
-//                new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).updateLog(ud, old, info, act);
-//            }
             if ( enable == 0 ) {
                 resMap.setOk( actType + "成功" );
             }

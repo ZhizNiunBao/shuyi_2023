@@ -13,7 +13,6 @@ import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
-import cn.bywin.business.job.OlkDataNodeJob;
 import cn.bywin.business.service.olk.OlkDatabaseService;
 import cn.bywin.business.service.olk.OlkFieldService;
 import cn.bywin.business.service.olk.OlkObjectService;
@@ -136,8 +135,6 @@ public class OlkFieldController extends BaseController {
             objectService.updateNoNull( tmpObj );
 
             fieldService.updateBean(info);
-
-            OlkDataNodeJob.addTable( objectDo.getId() );
 
             resMap.setSingleOk(info, "保存成功");
 
@@ -294,41 +291,6 @@ public class OlkFieldController extends BaseController {
 
             fieldService.updateBeanWithFlag(chgList, dbList, schemaList, objectList);
 
-            OlkDataNodeJob.reInit();
-
-//            for (int i = 0; i < chgList.size(); i++) {
-//                TOlkFieldDo info = chgList.get(i);
-//                TOlkFieldDo old = oldList.get(i);
-//                HashMap<String, Object> map = new HashMap<>();
-//                if (dbList != null) {
-//                    for (TOlkDatabaseDo tOlkDatabaseDo : dbList) {
-//                        if (tOlkDatabaseDo.getId().equals(info.getDbId())) {
-//                            map.put("db", tOlkDatabaseDo);
-//                            break;
-//                        }
-//                    }
-//                }
-//                if (schemaList != null) {
-//                    for (TOlkSchemaDo schemaDo : schemaList) {
-//                        if (schemaDo.getId().equals(info.getSchemaId())) {
-//                            map.put("schema", schemaDo);
-//                            break;
-//                        }
-//                    }
-//                }
-//
-//                if (objectList != null) {
-//                    for (TOlkObjectDo objectDo : objectList) {
-//                        if (objectDo.getId().equals(info.getObjectId())) {
-//                            map.put("object", objectDo);
-//                            break;
-//                        }
-//                    }
-//                }
-////                String msg = JsonUtil.toJson(map);
-////
-////                new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).updateLog(ud, old, info, msg, act);
-//            }
             if (enable == 0) {
                 resMap.setOk(actType + "成功");
             } else {
@@ -413,17 +375,6 @@ public class OlkFieldController extends BaseController {
 //            List<TOlkGroupObjectDo> groupObjlist = groupObjectService.findByExample(exp);
 
             fieldService.delWithUpdate(list,objList);
-
-            OlkDataNodeJob.addTableList(  objIdList );
-//            String times = String.valueOf(System.currentTimeMillis());
-//            for (TOlkFieldDo info : list) {
-//                try {
-//                    new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).delLog(user, info, "删除-olk字段" + times);
-//                } catch (Exception e1) {
-//                    resMap.setErr("删除失败");
-//                    logger.error("删除异常:", e1);
-//                }
-//            }
             resMap.setOk("删除成功");
 
         } catch (Exception ex) {

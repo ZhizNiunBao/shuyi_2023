@@ -576,7 +576,7 @@ public class OlkModelTaskController extends BaseController {
                         return  resMap.setErr( "节点未启用" ).getResultMap();
                     }
                     //HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-                    try(HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate( dcDo, user )){
+                    try(HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo)){
                         for ( TOlkModelElementDo elementDo : eleList ) {
                             String viewSql = String.format("CREATE OR REPLACE VIEW %s.tmp_%s AS %s", olkVdmCatalogViewName,elementDo.getId(), elementDo.getRunSql());
                             dbop.execute( viewSql );
@@ -1126,7 +1126,7 @@ public class OlkModelTaskController extends BaseController {
                             return resMap.setErr( "节点未启用" ).getResultMap();
                         }
                         //HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-                        try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate( dcDo, user ) ) {
+                        try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo) ) {
                             String viewSql = String.format( "select * from  %s.tmp_%s limit 100 ", olkVdmCatalogViewName, modelDo.getId() );
                             list = dbop.selectData( viewSql );
                         }
@@ -1615,7 +1615,7 @@ public class OlkModelTaskController extends BaseController {
                         return resMap.setErr( "节点未启用" ).getResultMap();
                     }
                     //HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-                    try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate( dcDo, user ) ) {
+                    try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo) ) {
                         String viewSql = String.format( "select * from  %s.tmp_%s limit 100 ", olkVdmCatalogViewName, meData.getId() );
                         list = dbop.selectData( viewSql );
                     }

@@ -17,7 +17,6 @@ import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.JsonUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
-import cn.bywin.business.job.OlkDataNodeJob;
 import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.olk.OlkDataNodeService;
 import cn.bywin.business.service.olk.OlkDatabaseService;
@@ -208,20 +207,10 @@ public class OlkSchemaController extends BaseController {
                     dbList.add( dbDo );
                 }
                 schemaService.updateBeanWithFlag( updList, dbList );
-                OlkDataNodeJob.reInit();
             }
             else {
                 schemaService.updateBean( info );
-                OlkDataNodeJob.addSchema(info.getId());
             }
-//            HashMap<String, Object> map = new HashMap<>();
-//            if ( dbList.size() > 0 ) {
-//                map.put( "db", dbList.get( 0 ) );
-//            }
-//            String msg = JsonUtil.toJson( map );
-
-//            new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).updateLog(ud, oldData, info, msg,"修改-olk数据库");
-
             resMap.setSingleOk( info, "保存成功" );
 
         }
@@ -321,7 +310,6 @@ public class OlkSchemaController extends BaseController {
             }
 
             schemaService.updateBeanWithFlag( chgList, dbList );
-            OlkDataNodeJob.reInit();
 
             for ( int i = 0; i < chgList.size(); i++ ) {
                 TOlkSchemaDo info = chgList.get( i );

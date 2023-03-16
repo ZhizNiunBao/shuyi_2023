@@ -13,7 +13,6 @@ import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.JsonUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
-import cn.bywin.business.job.BydbDataNodeJob;
 import cn.bywin.business.service.bydb.BydbDataNodeService;
 import cn.bywin.business.service.bydb.BydbDatabaseService;
 import cn.bywin.business.service.bydb.BydbFieldService;
@@ -198,11 +197,9 @@ public class BydbSchemaController extends BaseController {
                     dbList.add( dbDo );
                 }
                 schemaService.updateBeanWithFlag( updList, dbList );
-                BydbDataNodeJob.reInit();
             }
             else {
                 schemaService.updateBean( info );
-                BydbDataNodeJob.addSchema(info.getId());
             }
 //            HashMap<String, Object> map = new HashMap<>();
 //            if ( dbList.size() > 0 ) {
@@ -306,7 +303,6 @@ public class BydbSchemaController extends BaseController {
             }
 
             schemaService.updateBeanWithFlag( chgList, dbList );
-            BydbDataNodeJob.reInit();
 
             for ( int i = 0; i < chgList.size(); i++ ) {
                 TBydbSchemaDo info = chgList.get( i );

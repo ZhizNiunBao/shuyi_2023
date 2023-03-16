@@ -44,7 +44,6 @@ import cn.bywin.business.common.util.PageBeanWrapper;
 import cn.bywin.business.common.util.SqlTextUtil;
 import cn.bywin.business.hetu.HetuJdbcOperate;
 import cn.bywin.business.hetu.HetuJdbcOperateComponent;
-import cn.bywin.business.job.OlkDataNodeJob;
 import cn.bywin.business.modeltask.ModelTaskFlinkApiService;
 import cn.bywin.business.service.bydb.BydbDatabaseService;
 import cn.bywin.business.service.bydb.BydbDatasetService;
@@ -403,7 +402,6 @@ public class OlkModelController extends BaseController {
             }
 
             truModelService.copyModel( info, newEleList, newRelList, newFieldList, newObjList );
-            OlkDataNodeJob.reInit();
 
             resMap.setSingleOk( info, "模型复制成功" );
         }
@@ -471,10 +469,6 @@ public class OlkModelController extends BaseController {
             }
             info.setSynFlag( 0 );
             truModelService.updateBean( info );
-            OlkDataNodeJob.addOlkModel( info.getId() );
-
-            //new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).updateLog(user, old, info, "修改-数据集基本");
-
             resMap.setSingleOk( info, "保存成功" );
 
         }
@@ -1054,7 +1048,6 @@ public class OlkModelController extends BaseController {
                         info.setStatus( 9 );
                         info.setSynFlag( 0 );
                         truModelService.updateBean( info );
-                        OlkDataNodeJob.addOlkModel( info.getId() );
                     }
                 }
                 catch ( Exception e1 ) {
@@ -1342,7 +1335,7 @@ public class OlkModelController extends BaseController {
                     return  resMap.setErr( "节点未启用" ).getResultMap();
                 }
                 //HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-                try(HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate( dcDo, user )){
+                try(HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo)){
                     list = dbop.selectData( sql, LinkedHashMap.class );
                 }
             }
@@ -1486,9 +1479,6 @@ public class OlkModelController extends BaseController {
             }
 
             truModelService.updateBean( info );
-            OlkDataNodeJob.addOlkModel( info.getId() );
-
-            //new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).addLog(user, info, "修改-模型信息");
             result.setOk( "更新模型成功" );
         }
         catch ( Exception e ) {
@@ -1517,7 +1507,7 @@ public class OlkModelController extends BaseController {
                 throw new MessageException( "节点未启用" );
             }
             //HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-            try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate( dcDo, user ) ) {
+            try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo) ) {
                 String viewSql = String.format( "CREATE OR REPLACE VIEW %s AS %s", info.getViewName(), info.getRunSql() );
                 dbop.execute( viewSql );
                 fieldList = loadViewColumns(dbop, info.getViewName());

@@ -377,7 +377,6 @@ public class DbDataLoadThread extends Thread {
             logger.error( "刷新" + dbInfo.getDcDbName() + "元数据数据失败", e );
         }
         finally {
-            BydbDataNodeJob.reInit();
             redisTemplate.delete( redKey );
             logger.info( "刷新" + dbInfo.getDcDbName() + "元数据数据结束" );
         }

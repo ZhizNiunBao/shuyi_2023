@@ -22,7 +22,6 @@ import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
-import cn.bywin.business.job.OlkDataNodeJob;
 import cn.bywin.business.service.federal.DataSourceService;
 import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.olk.OlkDataNodeService;
@@ -205,23 +204,10 @@ public class OlkObjectController extends BaseController {
                 info.setSynFlag( 0 );
 
                 olkObjectService.updateBeanWithFlag( updList, dbList, schemaList );
-                OlkDataNodeJob.addTable( info.getId() );
             }
             else{
                 olkObjectService.updateBean( info );
-                OlkDataNodeJob.addTable( info.getId() );
             }
-
-//            HashMap<String, Object> map = new HashMap<>();
-//            if ( dbList.size() > 0 ) {
-//                map.put( "db", dbList.get( 0 ) );
-//            }
-//            if ( schemaList.size() > 0 ) {
-//                map.put( "schema", schemaList.get( 0 ) );
-//            }
-//            String msg = JsonUtil.toJson(map);
-//            new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).updateLog(ud, oldData, info, msg,"修改-olk对象");
-
             resMap.setSingleOk( info, "保存成功" );
 
         }
@@ -332,33 +318,6 @@ public class OlkObjectController extends BaseController {
             }
 
             olkObjectService.updateBeanWithFlag( chgList, dbList, schemaList );
-            OlkDataNodeJob.reInit();
-
-//            for ( int i = 0; i < chgList.size(); i++ ) {
-//                TOlkObjectDo info = chgList.get( i );
-//                TOlkObjectDo old = oldList.get( i );
-//                HashMap<String, Object> map = new HashMap<>();
-//                if ( dbList != null ) {
-//                    for ( TOlkDatabaseDo tOlkDatabaseDo : dbList ) {
-//                        if ( tOlkDatabaseDo.getId().equals( info.getDbId() ) ) {
-//                            map.put( "db", tOlkDatabaseDo );
-//                            break;
-//                        }
-//                    }
-//                }
-//                if ( schemaList != null ) {
-//                    for ( TOlkSchemaDo schemaDo : schemaList ) {
-//                        if ( schemaDo.getId().equals( info.getSchemaId() ) ) {
-//                            map.put( "schema", schemaDo );
-//                            break;
-//                        }
-//                    }
-//                }
-//
-////                String msg = JsonUtil.toJson(map);
-////                new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).updateLog(ud, old, info,msg, act);
-//            }
-
             resMap.setOk( actType + "成功" );
         }
         catch ( Exception ex ) {
@@ -704,33 +663,7 @@ public class OlkObjectController extends BaseController {
                 tmp.setShareTime( info.getShareTime() );
                 tmp.setShareFlag( info.getShareFlag() );
                 olkObjectService.updateWithNodes( tmp, addDnList, null, delDnList );
-
-//                else {
-//                    Map<String, Object> retMap = apiTruModelService.delTable( info.getId(), ud.getTokenId() );
-//                    if ( !retMap.containsKey( "success" ) ){
-//                        return resMap.setErr( "保存完成，取消同步信息失败" ).getResultMap();
-//                    }
-//                    if(!(boolean) retMap.get( "success" ) ) {
-//                        return resMap.setErr( "保存完成，取消同步信息失败,".concat(  (String)retMap.get( "msg" ) ) ).getResultMap();
-//                    }
-//                    info.setShareFlag( 0 );
-//                    info.setShareTime( ComUtil.getCurTimestamp() );
-//                    TOlkObjectDo tmp = new TOlkObjectDo();
-//                    tmp.setId( info.getId() );
-//                    tmp.setNodePartyId( info.getNodePartyId() );
-//                    tmp.setShareTime( info.getShareTime() );
-//                    tmp.setShareFlag( info.getShareFlag() );
-//                    olkObjectService.updateNoNull( tmp );
-//                }
             }
-            OlkDataNodeJob.addTableList( idList );
-
-//            if( info.getShareFlag() == 1){
-//                apiTruModelService.synDbsource( info );
-//            }
-
-            //new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).updateLog(ud, old, info, "修改-数据源");
-
             resMap.setOk( "保存成功" );
 
         }

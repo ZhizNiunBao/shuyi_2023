@@ -13,7 +13,6 @@ import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
-import cn.bywin.business.job.BydbDataNodeJob;
 import cn.bywin.business.service.bydb.BydbDatabaseService;
 import cn.bywin.business.service.bydb.BydbFieldService;
 import cn.bywin.business.service.bydb.BydbObjectService;
@@ -136,8 +135,6 @@ public class BydbFieldController extends BaseController {
             objectService.updateNoNull( tmpObj );
 
             fieldService.updateBean(info);
-
-            BydbDataNodeJob.addTable( objectDo.getId() );
 
             resMap.setSingleOk(info, "保存成功");
 
@@ -294,8 +291,6 @@ public class BydbFieldController extends BaseController {
 
             fieldService.updateBeanWithFlag(chgList, dbList, schemaList, objectList);
 
-            BydbDataNodeJob.reInit();
-
 //            for (int i = 0; i < chgList.size(); i++) {
 //                TBydbFieldDo info = chgList.get(i);
 //                TBydbFieldDo old = oldList.get(i);
@@ -413,8 +408,6 @@ public class BydbFieldController extends BaseController {
 //            List<TBydbGroupObjectDo> groupObjlist = groupObjectService.findByExample(exp);
 
             fieldService.delWithUpdate(list,objList);
-
-            BydbDataNodeJob.addTableList(  objIdList );
 //            String times = String.valueOf(System.currentTimeMillis());
 //            for (TBydbFieldDo info : list) {
 //                try {

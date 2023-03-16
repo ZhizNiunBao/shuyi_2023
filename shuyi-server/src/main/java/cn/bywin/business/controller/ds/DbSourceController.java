@@ -14,7 +14,6 @@ import cn.bywin.business.common.login.LoginUtil;
 import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
-import cn.bywin.business.job.BydbDataNodeJob;
 import cn.bywin.business.job.DbDataLoadThread;
 import cn.bywin.business.service.bydb.BydbCatalogTypeService;
 import cn.bywin.business.service.bydb.BydbDatabaseService;
@@ -247,12 +246,6 @@ public class DbSourceController extends BaseController {
 
             dbSourceService.insertWithDatabase( info, databaseDo );
 
-            //同步数据到服务端
-            BydbDataNodeJob.addDbSource( info.getId() );
-            if ( databaseDo != null ) {
-                BydbDataNodeJob.addDb( info.getId() );
-            }
-
             if ( databaseDo != null ) {
                 DbDataLoadThread thread = new DbDataLoadThread( schemaService, objectService, fieldService, apiTruModelService, redisTemplate,
                         databaseDo, info, null, null, nodePartyDo, ud, HttpRequestUtil.getAllIp( request ) );
@@ -407,10 +400,6 @@ public class DbSourceController extends BaseController {
 //            }
 
             dbSourceService.updateWithDatabase( info, databaseDo );
-
-            BydbDataNodeJob.addDbSource( info.getId() );
-            if ( databaseDo != null )
-                BydbDataNodeJob.addDb( databaseDo.getId() );
 
             if ( dbList.size() > 0 ) {
                 databaseDo = dbList.get( 0 );
