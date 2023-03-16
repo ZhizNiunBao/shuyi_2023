@@ -1,0 +1,129 @@
+server:
+  port: 9191
+
+spring: 
+  #1.jdbc config
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    #druid:
+    #old mysql driver
+    driver-class-name: com.mysql.jdbc.Driver
+    jdbc-url: jdbc:mysql://192.168.96.46:3306/fed_server?characterEncoding=utf8&useOldAliasMetadataBehavior=true&allowMultiQueries=true&useSSL=false
+    username: root
+    password: 298440
+    initialSize: 3
+    minIdle: 2
+    maxActive: 5
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 1 
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxPoolPreparedStatementPerConnectionSize: 20
+    filters: stat,wall,log4j
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis= 5000
+    connection-timeout: 300000
+
+  redis:
+    host: 192.168.96.96
+    port: 6379
+    password: by321qaz
+    database: 0
+    timeout: 60s  # 数据库连接超时时间，2.0 中该参数的类型为Duration，这里在配置的时候需要指明单位
+    # 连接池配置，2.0中直接使用jedis或者lettuce配置连接池
+    jedis:
+      pool:
+        # 最大空闲连接数
+        max-idle: 100
+        # 最小空闲连接数
+        min-idle: 20
+        # 等待可用连接的最大时间，负数为不限制
+        max-wait:  -1s
+        # 最大活跃连接数，负数为不限制
+        max-active: -1
+
+feign:
+  hystrix:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 60000
+        readTimeout: 60000
+
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: true
+        isolation:
+          strategy: SEMAPHORE
+          thread:
+            timeoutInMilliseconds: 60000
+#自定义
+#userLoginTimeOutMinutes: 600
+#系统参数在redis名称前缀，未配置默认为byflhub_
+#paraSetRedisPrefixName: byflhub_
+#是否启用日志
+logEnable: 1
+pmServerUrl: http://localhost:9199/pmserver/transform
+modelTaskFlinkUrl: http://192.168.96.96:16000/occlum/
+exchangeServerUrl: http://192.168.96.96:30000
+flowServerUrl: http://192.168.96.96:30097
+trumodelServerUrl: http://localhost:9199/pmserver/
+sqlMaxLimit: 10000
+#pythonCommand: D:/soft/Python310/python
+#byEdaPythonFileName: D:/work/pythonwork/by_eda.py
+#edaDescPythonFileName: D:/work/pythonwork/eda_desc.py
+#edaIsnullPythonFileName: D:/work/pythonwork/eda_isnull.py
+#edaNominalPythonFileName: D:/work/pythonwork/eda_nominal.py
+#edaInfoPythonFileName: D:/work/pythonwork/eda_info.py
+#edaProfilePythonFileName: D:/work/pythonwork/eda_profile.py
+#edaJdbcProfilePythonFileName: D:/work/pythonwork/eda_profile_jdbcbase64.py
+#edaHtmlNginxPath: /bdp/bywin_ui/ver/flhub
+pythonCommand: /bdp/anaconda3/bin/python
+byEdaPythonFileName: /bdp/pywork/by_eda.py
+edaDescPythonFileName: /bdp/pywork/eda_desc.py
+edaIsnullPythonFileName: /bdp/pywork/eda_isnull.py
+edaNominalPythonFileName: /bdp/pywork/eda_nominal.py
+edaInfoPythonFileName: /bdp/pywork/eda_info.py
+edaProfilePythonFileName: /bdp/pywork/eda_profile.py
+edaJdbcProfilePythonFileName: /bdp/pywork/eda_profile_jdbcbase64.py
+edaHtmlNginxPath: /bdp/bywin_ui/ui/
+
+truudfdbtype: flink_1_14_4
+olkudfdbtype: olk_1_6_0
+
+trumodeloutdbset:
+  dstype: STARROCKS
+  dbName: demos
+  driver: com.mysql.jdbc.Driver
+  jdbcurl: jdbc:mysql://192.168.96.218:9030/demos?useUnicode=true&characterEncoding=utf8&useOldAliasMetadataBehavior=true&allowMultiQueries=true&rewriteBatchedStatements=true&useSSL=false
+  user: bywin
+  password: bywin123
+  loadurl: 192.168.96.218:8030
+
+olk:
+  type: hetu
+  driver: io.hetu.core.jdbc.OpenLooKengDriver
+  url: jdbc:lk://192.168.96.138:32020/system
+  connectionUrl: http://192.168.96.138:32020
+  isEncryptPassword: false
+  authType: none
+  user: bywin
+  passwd:
+
+#权限认证模式 4a native local
+#auth:
+#  debug: 0
+#  mode: native
+#  class: cn.bywin.business.syslogin.LoginNativeMenu
+#  #class: cn.bywin.business.syslogin.Login4AMenu
+#  #class: cn.bywin.business.syslogin.LoginLocalMenu
+#/system/logbackview|
+urlIgnorePattern: user/register|/user/captcha|/homepage/sysresourceset|/colmodel/readmodelrunjobinfo|/v1/*|/doc.html*|/swagger-resources/*|/v2/api-docs|/configuration/ui|/doc.html*|/swagger-|/v3/|/webjars/*|/excel/*|/ws/*|/*\.js|/user/login|/user/checklogin|/logout
+

@@ -1,0 +1,680 @@
+package cn.bywin.business.controller.bydb;
+
+
+//import cn.bywin.api.workflow.common.WfTaskMeta;
+//import cn.bywin.api.workflow.query.WfActTask;
+//import cn.bywin.api.workflow.reject.WfRejectTaskInfo;
+
+import cn.bywin.business.bean.bydb.TTruApplyCheckDo;
+import cn.bywin.business.bean.bydb.TTruApplyObjectDo;
+import cn.bywin.business.bean.bydb.TTruGrantObjectDo;
+import cn.bywin.business.bean.view.bydb.TruApplyCheckVo;
+import cn.bywin.business.common.base.BaseController;
+import cn.bywin.business.common.base.ResponeMap;
+import cn.bywin.business.common.base.UserDo;
+import cn.bywin.business.common.login.LoginUtil;
+import cn.bywin.business.common.util.ComUtil;
+import cn.bywin.business.common.util.HttpRequestUtil;
+import cn.bywin.business.common.util.MyBeanUtils;
+import cn.bywin.business.common.util.PageBeanWrapper;
+import cn.bywin.business.service.bydb.TruApplyCheckService;
+import cn.bywin.business.service.bydb.TruApplyObjectService;
+import cn.bywin.business.service.bydb.BydbDatabaseService;
+import cn.bywin.business.service.bydb.BydbDatasetService;
+import cn.bywin.business.service.bydb.BydbFieldService;
+import cn.bywin.business.service.bydb.BydbObjectService;
+import cn.bywin.business.service.bydb.BydbSchemaService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import tk.mybatis.mapper.entity.Example;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
+
+
+@CrossOrigin(value = {"*"},
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE},
+        maxAge = 3600)
+@RestController
+@Api(tags = "可信建模- 审批管理-truapplycheck")
+@RequestMapping("/truapplycheck")
+public class TruApplyCheckController extends BaseController {
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private BydbDatabaseService databaseService;
+
+    @Autowired
+    private BydbSchemaService shcmeaService;
+
+    @Autowired
+    private BydbObjectService objectService;
+
+    @Autowired
+    private BydbFieldService fieldService;
+
+    @Autowired
+    private BydbDatasetService datasetService;
+
+    @Autowired
+    private TruApplyObjectService applyObjectService;
+
+    @Autowired
+    private TruApplyCheckService applyCheckService;
+
+
+    @Value("workflowClass")
+    String workflowClass;
+//    @Autowired
+//    IApplyObjectWorkflow workflow;
+
+    @ApiOperation(value = "审批资源申请", notes = "审批资源申请")
+    @ApiImplicitParams({
+            //@ApiImplicitParam(name = "modelVo", value = "审批对象", dataType = "TBydbFieldDo", required = true, paramType = "body")
+    })
+    @RequestMapping(value = "/checkapply", method = {RequestMethod.POST})
+    @ResponseBody
+    public Object checkApply(@RequestBody TTruApplyCheckDo bean, HttpServletRequest request) {
+        ResponeMap resMap = this.genResponeMap();
+        try {
+            UserDo ud = LoginUtil.getUser(request);
+            if (ud == null || StringUtils.isBlank(ud.getUserId())) {
+                return resMap.setErr("请先登录").getResultMap();
+            }
+            if (StringUtils.isBlank(bean.getApplyId())) {
+                return resMap.setErr("申请id不能为空").getResultMap();
+            }
+
+            TTruApplyObjectDo applyObjectDo = applyObjectService.findById(bean.getApplyId());
+
+            if (applyObjectDo == null) {
+                return resMap.setErr("申请内容不存在").getResultMap();
+            }
+            if (applyObjectDo.getStatus() != null && (applyObjectDo.getStatus() == 1 || applyObjectDo.getStatus() == 2)) {
+                return resMap.setErr("已审批不能再审批").getResultMap();
+            }
+
+            TTruGrantObjectDo grant = null;
+            if (bean.getCheckStatus() == null) {
+                return resMap.setErr("审批状态不能为空").getResultMap();
+            } else {
+
+                bean.setCheckTime(new Date());
+                bean.setCheckAccount(ud.getUserName());
+                bean.setCheckChnName( ud.getChnName() );
+                bean.setCheckDeptNo( ud.getOrgNo() );
+                bean.setCheckDeptName( ud.getOrgName() );
+                bean.setId( ComUtil.genId());
+
+                applyObjectDo.setCheckRemark(bean.getCheckRemark());
+                applyObjectDo.setCheckTime(bean.getCheckTime());
+                applyObjectDo.setCheckAccount(bean.getCheckAccount());
+                applyObjectDo.setCheckChnName(bean.getCheckChnName());
+                applyObjectDo.setCheckDeptNo(bean.getCheckDeptNo());
+                applyObjectDo.setCheckDeptName(bean.getCheckDeptName());
+
+                if (bean.getCheckStatus() == 1 || bean.getCheckStatus() == 2) {
+
+                    if (bean.getCheckStatus() == 2) {
+                        if (StringUtils.isBlank(bean.getCheckRemark())) {
+                            return resMap.setErr("审批不通过，审批内容不能为空").getResultMap();
+                        }
+                        LoginUtil.setBeanInsertUserInfo(bean, ud);
+                        applyObjectDo.setStatus(2);
+
+                    } else if (bean.getCheckStatus() == 1) {
+                        bean.setCheckTime(new Date());
+                        bean.setCheckAccount(ud.getUserName());
+                        bean.setId(ComUtil.genId());
+                        LoginUtil.setBeanInsertUserInfo(bean, ud);
+                        applyObjectDo.setStatus(22);
+
+//                        grant = new TTruGrantObjectDo();
+//                        MyBeanUtils.copyBeanNotNull2Bean(applyObjectDo, grant);
+//                        grant.setToAccount(applyObjectDo.getApplyAccount());
+//                        grant.setGrantTime(bean.getCheckTime());
+//                        grant.setId(ComUtil.genId());
+//                        grant.setApplyId( applyObjectDo.getId() );
+                    }
+//                    Resp<WfTaskMeta> taskMetaResp = workflow.complete(applyObjectDo, bean);
+//
+//                    if (RespUtil.success(taskMetaResp)) {
+//                        WfTaskMeta data = taskMetaResp.getData();
+//                        applyObjectDo.setProcessInstanceId(data.getProcessInstanceId());
+//                        applyObjectDo.setTaskId(data.getTaskId());
+//                        applyObjectDo.setTaskName(data.getTaskName());
+//
+//                        if( StringUtils.isBlank( data.getCandidateUser() ) || "null".equalsIgnoreCase( data.getCandidateUser() ) ) {
+//                            applyObjectDo.setCandidateUser( null );
+//                        }
+//                        else{
+//                            applyObjectDo.setCandidateUser(String.format(",%s,", data.getCandidateUser()));
+//                        }
+//                        applyObjectDo.setCandidateNickName( data.getCandidateNickName() );
+//                        applyObjectDo.setCandidateRole(data.getCandidateRole());
+//
+//                        if ("审批拒绝".equals(applyObjectDo.getTaskName())) {
+//                            applyObjectDo.setStatus(2);
+//                            applyObjectDo.setCandidateUser(null);
+//                            applyObjectDo.setCandidateNickName(null);
+//                            applyObjectDo.setCandidateRole( null );
+//                        } else if ("审批通过".equals(applyObjectDo.getTaskName())) { //审批结束
+//                            applyObjectDo.setStatus(1);
+//                            applyObjectDo.setCandidateUser(null);
+//                            applyObjectDo.setCandidateNickName(null);
+//                            applyObjectDo.setCandidateRole( null );
+//                            grant = new TTruGrantObjectDo();
+//                            MyBeanUtils.copyBeanNotNull2Bean(applyObjectDo, grant);
+//                            grant.setId(ComUtil.genId());
+//                            grant.setToAccount(applyObjectDo.getApplyAccount());
+//                            grant.setToChnName( applyObjectDo.getApplyChnName());
+//                            grant.setToDeptNo( applyObjectDo.getApplyDeptNo());
+//                            grant.setToDeptName( applyObjectDo.getApplyDeptName() );
+//                            grant.setGrantTime(bean.getCheckTime());
+//                            LoginUtil.setBeanInsertUserInfo(grant, ud);
+//                            grant.setApplyId(applyObjectDo.getId());
+//                        }
+//                    } else {
+//                        return resMap.setErr(taskMetaResp.getMsg()).getResultMap();
+//                    }
+                } else {
+                    return resMap.setErr("审批状态不正确").getResultMap();
+                }
+            }
+
+            applyCheckService.saveCheck(applyObjectDo, bean, grant);
+
+            resMap.setSingleOk(bean, "保存成功");
+
+        } catch (Exception ex) {
+            resMap.setErr("保存失败");
+            logger.error("保存异常:", ex);
+        }
+        return resMap.getResultMap();
+    }
+
+    @ApiOperation(value = "审批对象内容", notes = "审批对象内容")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "语句元素id", dataType = "String", required = true, paramType = "query")
+    })
+    @RequestMapping(value = "/info", method = {RequestMethod.GET})
+    @ResponseBody
+    public Object info(String id) {
+        ResponeMap resMap = this.genResponeMap();
+        try {
+            if (StringUtils.isBlank(id)) {
+                return resMap.setErr("id不能为空").getResultMap();
+            }
+//            TBydbFieldDo modelVo = fieldService.findById(id);
+//            resMap.setSingleOk(modelVo, "成功");
+
+        } catch (Exception ex) {
+            resMap.setErr("查询失败");
+            logger.error("查询异常:", ex);
+        }
+        return resMap.getResultMap();
+    }
+
+    @ApiOperation(value = "获取申请对象与审批内容", notes = "获取申请对象与审批内容")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "applyId", value = "申请信息id", dataType = "String", required = true, paramType = "query")
+    })
+    @RequestMapping(value = "/applywithcheck", method = {RequestMethod.GET})
+    @ResponseBody
+    public Object applywithcheck(String applyId) {
+        ResponeMap resMap = this.genResponeMap();
+        try {
+            if (StringUtils.isBlank(applyId)) {
+                return resMap.setErr("id不能为空").getResultMap();
+            }
+            TTruApplyObjectDo applyDo = applyObjectService.findById(applyId);
+            if (applyDo == null) {
+                return resMap.setErr("申请不存在").getResultMap();
+            }
+            TTruApplyCheckDo checkDo = new TTruApplyCheckDo();
+            checkDo.setApplyId(applyDo.getId());
+            List<TTruApplyCheckDo> beanList = applyCheckService.findBeanList(checkDo);
+            resMap.put("checkList", beanList);
+
+            resMap.setSingleOk(applyDo, "获取申请对象与审批内容成功");
+
+
+        } catch (Exception ex) {
+            resMap.setErr("获取申请对象与审批内容失败");
+            logger.error("获取申请对象与审批内容异常:", ex);
+        }
+        return resMap.getResultMap();
+    }
+
+
+    @ApiOperation(value = "删除审批对象", notes = "删除审批对象")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "审批id", dataType = "String", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "relId", value = "关联对象id", dataType = "String", required = true, paramType = "query")
+    })
+    @RequestMapping(value = "/delete", method = {RequestMethod.DELETE})
+    @ResponseBody
+    public Object delete(String id, String relId, HttpServletRequest request) {
+        ResponeMap resMap = this.genResponeMap();
+        try {
+            if (StringUtils.isBlank(id) && StringUtils.isBlank(relId)) {
+                return resMap.setErr("id和关联id不能同时为空").getResultMap();
+            }
+            UserDo user = LoginUtil.getUser(request);
+//            if( !id.matches("^[a-zA-Z0-9\\-_,]*$") ){
+//                return resMap.setErr("id有非法字符").getResultMap();
+//            }
+            List<String> ids = null;
+            if (StringUtils.isNotBlank(id)) {
+                ids = Arrays.asList(id.split(",|\\s+"));
+            }
+            List<String> rels = null;
+            if (StringUtils.isNotBlank(relId)) {
+                rels = Arrays.asList(relId.split(",|\\s+"));
+            }
+            Example exp = new Example(TTruApplyObjectDo.class);
+            Example.Criteria criteria = exp.createCriteria();
+            if (ids != null) {
+                criteria.andIn("id", ids);
+            }
+            if (rels != null) {
+                criteria.andIn("relId", rels);
+                criteria.andEqualTo("ApplyAccount", user.getUserName());
+            }
+            List<TTruApplyCheckDo> list = applyCheckService.findByExample(exp);
+            int cnt = list.size();
+            if (cnt == 0) {
+                return resMap.setErr("没有数据可删除").getResultMap();
+            }
+            if (ids != null && list.size() != ids.size()) {
+                return resMap.setErr("有数据不存在").getResultMap();
+            }
+            ids = list.stream().map(x -> x.getId()).collect(Collectors.toList());
+            applyCheckService.deleteByIds(ids);
+
+//            String times = String.valueOf(System.currentTimeMillis());
+//            for (TTruApplyCheckDo info : list) {
+//                try {
+//                    new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).delLog(user, info, "删除-审批对象" + times);
+//                } catch (Exception e1) {
+//                    resMap.setErr("删除失败");
+//                    logger.error("删除异常:", e1);
+//                }
+//            }
+            resMap.setOk("删除成功");
+
+        } catch (Exception ex) {
+            resMap.setErr("删除失败");
+            logger.error("删除异常:", ex);
+        }
+        return resMap.getResultMap();
+    }
+
+//    @ApiOperation(value = "获取审批对象列表", notes = "获取审批对象列表")
+//    @ApiImplicitParams({
+//            @ApiImplicitParam(name = "qryCond", value = "模糊条件", dataType = "String", required = false, paramType = "query"),
+//            @ApiImplicitParam(name = "currentPage", value = "页数", dataType = "Integer", required = false, paramType = "query"),
+//            @ApiImplicitParam(name = "pageSize", value = "分页大小", dataType = "Integer", required = false, paramType = "query")
+//    })
+//    @RequestMapping(value = "/page", method = {RequestMethod.GET})
+//    @ResponseBody
+//    public Object page(HttpServletRequest request) {
+//        ResponeMap resMap = this.genResponeMap();
+//        try {
+//            TTruApplyObjectDo modelVo = new TTruApplyObjectDo();
+//            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest( request );
+//            new PageBeanWrapper( modelVo,hru);
+//            modelVo.setQryCond(ComUtil.chgLikeStr(modelVo.getQryCond()));
+//
+//            long findCnt = applyCheckService.findBeanCnt(modelVo);
+//            modelVo.genPage(findCnt);
+//
+//            List<TTruApplyObjectDo> list = applyCheckService.findBeanList(modelVo);
+//
+//            resMap.setPageInfo(modelVo.getPageSize(), modelVo.getCurrentPage());
+//            resMap.setOk(findCnt, list, "获取审批对象列表成功");
+//        } catch (Exception ex) {
+//            resMap.setErr("获取审批对象列表失败");
+//            logger.error("获取审批对象列表失败:", ex);
+//        }
+//        return resMap.getResultMap();
+//    }
+
+    @ApiOperation(value = "获取待办列表", notes = "获取待办列表")
+    @ApiImplicitParams({
+            // @ApiImplicitParam(name = "qryCond", value = "模糊条件", dataType = "String", required = false, paramType = "query"),
+            @ApiImplicitParam(name = "currentPage", value = "页数", dataType = "Integer", required = false, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "分页大小", dataType = "Integer", required = false, paramType = "query")
+    })
+    @RequestMapping(value = "/todolist", method = {RequestMethod.GET})
+    @ResponseBody
+    public Object toDoList(HttpServletRequest request) {
+        ResponeMap resMap = this.genResponeMap();
+        try {
+
+            UserDo user = LoginUtil.getUser(request);
+            TTruApplyObjectDo modelVo = new TTruApplyObjectDo();
+            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest(request);
+            new PageBeanWrapper(modelVo, hru);
+            MyBeanUtils.chgBeanLikeAndOtherStringEmptyToNull( modelVo,"qryCond");
+            modelVo.setCandidateUser("%," + user.getUserName() + ",%");
+            modelVo.setStatus(20);
+            modelVo.genPage();
+
+//            RespTableInfo<WfActTask> query = workflow.query( user.getUserName(), 1, modelVo.getCurrentPage(), modelVo.getPageSize());
+//
+//            long findCnt = query.getTotal();
+//
+//            List<String> ids = query.getRows().stream().map(x -> x.getFormId()).collect(Collectors.toList());
+//
+//            List<Object> retList = new ArrayList<>();
+//
+//            if( ids.size()>0) {
+//
+//                Map<String, TBydbDcServerDo> dcMap = dcserverService.findBaseList(null).stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+//
+//                Example exp = new Example(TTruApplyObjectDo.class);
+//                Example.Criteria criteria = exp.createCriteria();
+//                criteria.andIn("id", ids);
+//                List<TTruApplyObjectDo> list = applyObjectService.findByExample(exp);
+//
+//
+//                for (WfActTask row : query.getRows()) {
+//                    HashMap<String, Object> datMap = new HashMap<>();
+//                    MyBeanUtils.copyBean2Map(datMap, row);
+//                    for (TTruApplyObjectDo apply : list) {
+//                        if (apply.getId().equals(row.getFormId())) {
+//                            MyBeanUtils.copyBean2Map(datMap, apply);
+//                            TBydbDcServerDo dcdo = dcMap.get(apply.getDcId());
+//                            if( dcdo != null ){
+//                                datMap.put("dcName", dcdo.getDcName() );
+//                                datMap.put("dcManageName",dcdo.getManageName());
+//                            }
+//                            if(StringUtils.isNotBlank( apply.getCandidateUser()) && apply.getCandidateUser().startsWith(","))
+//                            {
+//                                String cuser = apply.getCandidateUser().substring(1);
+//                                if( cuser.charAt(cuser.length()-1)==','){
+//                                    cuser = cuser.substring(0,cuser.length()-1);
+//                                }
+//                                datMap.put("candidateUser",cuser );
+//                            }
+//                            break;
+//                        }
+//                    }
+//                    //datMap.put("")
+//                    retList.add(datMap);
+//                }
+//            }
+
+            long findCnt = applyObjectService.findBeanCnt(modelVo);
+            modelVo.genPage(findCnt);
+            List<TTruApplyObjectDo> list = applyObjectService.findBeanList(modelVo);
+
+            List<Object> retList = new ArrayList<>();
+
+            if (list.size() > 0) {
+
+               // Map<String, TBydbDcServerDo> dcMap = dcserverService.findBaseList(null).stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+
+                for (TTruApplyObjectDo apply : list) {
+                    HashMap<String, Object> datMap = new HashMap<>();
+                    MyBeanUtils.copyBean2Map(datMap, apply);
+//                    TBydbDcServerDo dcdo = dcMap.get(apply.getDcId());
+//                    if (dcdo != null) {
+//                        datMap.put("dcName", dcdo.getDcName());
+//                        datMap.put("dcManageName", dcdo.getManageName());
+//                    }
+                    if (StringUtils.isNotBlank(apply.getCandidateUser()) && apply.getCandidateUser().startsWith(",")) {
+                        String cuser = apply.getCandidateUser().substring(1);
+                        if (cuser.charAt(cuser.length() - 1) == ',') {
+                            cuser = cuser.substring(0, cuser.length() - 1);
+                        }
+                        datMap.put("candidateUser", cuser);
+                    }
+                    retList.add(datMap);
+                }
+            }
+
+            resMap.setPageInfo(modelVo.getPageSize(), modelVo.getCurrentPage());
+            //resMap.put("rows", findCnt );
+            resMap.setOk(findCnt, retList, "获取待办列表成功");
+        } catch (Exception ex) {
+            resMap.setErr("获取待办列表失败");
+            logger.error("获取待办列表失败:", ex);
+        }
+        return resMap.getResultMap();
+    }
+
+    @ApiOperation(value = "已办列表", notes = "已办列表")
+    @ApiImplicitParams({
+            // @ApiImplicitParam(name = "qryCond", value = "模糊条件", dataType = "String", required = false, paramType = "query"),
+            @ApiImplicitParam(name = "currentPage", value = "页数", dataType = "Integer", required = false, paramType = "query"),
+            @ApiImplicitParam(name = "pageSize", value = "分页大小", dataType = "Integer", required = false, paramType = "query")
+    })
+    @RequestMapping(value = "/donelist", method = {RequestMethod.GET})
+    @ResponseBody
+    public Object doneList(HttpServletRequest request) {
+        ResponeMap resMap = this.genResponeMap();
+        try {
+
+            UserDo user = LoginUtil.getUser(request);
+            TruApplyCheckVo modelVo = new TruApplyCheckVo();
+            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest(request);
+            new PageBeanWrapper(modelVo,hru);
+            if (StringUtils.isBlank(modelVo.getCheckAccount())) {
+                modelVo.setCheckAccount(user.getUserName());
+            }
+            MyBeanUtils.chgBeanLikeAndOtherStringEmptyToNull( modelVo,"qryCond");
+            long findCnt = applyCheckService.findVCnt(modelVo);
+
+            modelVo.genPage(findCnt);
+
+            List<TruApplyCheckVo> list = applyCheckService.findVList(modelVo);
+
+            List<Object> retList = new ArrayList<>();
+
+            if (list.size() > 0) {
+
+                //Map<String, TBydbDcServerDo> dcMap = dcserverService.findBaseList(null).stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+                for (TruApplyCheckVo apply : list) {
+                    HashMap<String, Object> datMap = new HashMap<>();
+                    MyBeanUtils.copyBean2Map(datMap, apply);
+//                    TBydbDcServerDo dcdo = dcMap.get(apply.getDcId());
+//                    if (dcdo != null) {
+//                        datMap.put("dcName", dcdo.getDcName());
+//                        datMap.put("dcManageName", dcdo.getManageName());
+//                    }
+                    if (StringUtils.isNotBlank(apply.getCandidateUser()) && apply.getCandidateUser().startsWith(",")) {
+                        String cuser = apply.getCandidateUser().substring(1);
+                        if (cuser.charAt(cuser.length() - 1) == ',') {
+                            cuser = cuser.substring(0, cuser.length() - 1);
+                        }
+                        datMap.put("candidateUser", cuser);
+                    }
+                    retList.add(datMap);
+                }
+            }
+
+            resMap.setPageInfo(modelVo.getPageSize(), modelVo.getCurrentPage());
+            resMap.setOk(findCnt, retList, "获取已办列表成功");
+        } catch (Exception ex) {
+            resMap.setErr("获取已办列表失败");
+            logger.error("获取已办列表失败:", ex);
+        }
+        return resMap.getResultMap();
+    }
+
+    @ApiOperation(value = "获取待办条数", notes = "获取待办条数")
+    @ApiImplicitParams({
+    })
+    @RequestMapping(value = "/todocount", method = {RequestMethod.GET})
+    @ResponseBody
+    public Object toDoCount(HttpServletRequest request) {
+        ResponeMap resMap = this.genResponeMap();
+        try {
+
+            UserDo user = LoginUtil.getUser(request);
+            TTruApplyObjectDo modelVo = new TTruApplyObjectDo();
+            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest(request);
+            new PageBeanWrapper(modelVo, hru);
+            MyBeanUtils.chgBeanLikeAndOtherStringEmptyToNull( modelVo,"qryCond");
+            modelVo.setCandidateUser("%," + user.getUserName() + ",%");
+            modelVo.setStatus(20);
+            modelVo.genPage();
+
+//            RespTableInfo<WfActTask> query = workflow.query(user.getUserName(), 1, 1, 1);
+//            long findCnt = query.getTotal();
+            long findCnt = applyObjectService.findBeanCnt(modelVo);
+            resMap.setOk(findCnt, null, "获取待办条数成功");
+        } catch (Exception ex) {
+            resMap.setErr("获取待办条数失败");
+            logger.error("获取待办条数失败:", ex);
+        }
+        return resMap.getResultMap();
+    }
+
+    @ApiOperation(value = "删除流程", notes = "删除流程")
+    @ApiImplicitParams({
+    })
+    @RequestMapping(value = "/workflowdelete", method = {RequestMethod.GET})
+    @ResponseBody
+    public Object workflowDelete(String processInstanceId, HttpServletRequest request) {
+        ResponeMap resMap = this.genResponeMap();
+        try {
+            if (StringUtils.isBlank(processInstanceId)) {
+                return resMap.setErr("流程id不能为空").getResultMap();
+            }
+
+            UserDo user = LoginUtil.getUser(request);
+            TTruApplyObjectDo modelVo = new TTruApplyObjectDo();
+            modelVo.setProcessInstanceId(processInstanceId);
+            List<TTruApplyObjectDo> list = applyObjectService.find(modelVo);
+            if (list.size() > 0) {
+                return resMap.setErr("流程归属申请，不能删除").getResultMap();
+            }
+
+//            Resp<WfTaskMeta> result = workflow.delete(processInstanceId);
+//            if (RespUtil.success(result)) {
+//                resMap.setOk("删除成功");
+//            } else {
+//                resMap.setErr(result.getMsg());
+//            }
+        } catch (Exception ex) {
+            resMap.setErr("删除流程失败");
+            resMap.setDebugeInfo(ComUtil.getErrorInfoFromException(ex));
+            logger.error("删除流程失败:", ex);
+        }
+        return resMap.getResultMap();
+    }
+
+    @ApiOperation(value = "撤回审批", notes = "撤回审批")
+    @ApiImplicitParams({
+    })
+    @RequestMapping(value = "/workflowrejectask", method = {RequestMethod.POST})
+    @ResponseBody
+    public Object workflowRejecTask(@RequestBody TTruApplyCheckDo bean, HttpServletRequest request) {
+        ResponeMap resMap = this.genResponeMap();
+        try {
+
+            UserDo user = LoginUtil.getUser(request);
+            TTruApplyCheckDo modelVo = new TTruApplyCheckDo();
+
+            if (StringUtils.isBlank(bean.getApplyId())) {
+                return resMap.setErr("申请id不能为空");
+            }
+            TTruApplyObjectDo applyObjectDo = applyObjectService.findById(bean.getApplyId());
+            if (StringUtils.isBlank(applyObjectDo.getProcessInstanceId())) {
+                return resMap.setErr("申请数据有误");
+            }
+            if (applyObjectDo.getStatus() != null && applyObjectDo.getStatus() == 1 || applyObjectDo.getStatus() == 2) {
+                return resMap.setErr("审批已完成不能查询");
+            }
+            if (StringUtils.isBlank(bean.getRejectTaskKey())) {
+                return resMap.setErr("撤回节点不能为空");
+            }
+            bean.setCheckStatus(3); //撤回
+            bean.setCheckTime(new Date());
+            bean.setCheckAccount(user.getUserName());
+            bean.setId(ComUtil.genId());
+            LoginUtil.setBeanInsertUserInfo(bean, user);
+
+            //Resp<WfTaskMeta> wfTaskMetaResp = workflow.rejectTask(applyObjectDo.getProcessInstanceId(), applyObjectDo.getTaskId(), user.getUserName(), bean.getRejectTaskKey(), bean.getCheckRemark());
+//            Resp<WfTaskMeta> wfTaskMetaResp = workflow.withdraw(applyObjectDo.getProcessInstanceId(), applyObjectDo.getTaskId(), user.getUserName());
+//            if (RespUtil.success(wfTaskMetaResp)) {
+//                WfTaskMeta data = wfTaskMetaResp.getData();
+//                if (data != null) {
+//                    applyObjectDo.setProcessInstanceId(data.getProcessInstanceId());
+//                    applyObjectDo.setTaskId(data.getTaskId());
+//                    applyObjectDo.setTaskName(data.getTaskName());
+//                    applyObjectDo.setCandidateUser(data.getCandidateUser());
+//                    applyObjectDo.setCandidateRole(data.getCandidateRole());
+//                } else {
+//                    applyObjectDo = null;
+//                }
+//
+//                applyCheckService.saveCheck(applyObjectDo, bean, null);
+//                resMap.setOk("撤回节点成功");
+//            }
+        } catch (Exception ex) {
+            resMap.setErr("撤回节点失败");
+            logger.error("撤回节点失败:", ex);
+        }
+        return resMap.getResultMap();
+    }
+
+    @ApiOperation(value = "查询流程可撤回的节点列表", notes = "查询流程可撤回的节点列表")
+    @ApiImplicitParams({
+    })
+    @RequestMapping(value = "/workflowrejecttasklist", method = {RequestMethod.GET})
+    @ResponseBody
+    public Object workflowRejectTaskList(String applyId, HttpServletRequest request) {
+        ResponeMap resMap = this.genResponeMap();
+        try {
+
+            UserDo user = LoginUtil.getUser(request);
+            TTruApplyCheckDo modelVo = new TTruApplyCheckDo();
+            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest(request);
+            modelVo.genPage();
+
+            if (StringUtils.isBlank(applyId)) {
+                return resMap.setErr("申请id不能为空");
+            }
+            TTruApplyObjectDo applyObjectDo = applyObjectService.findById(applyId);
+            if (StringUtils.isBlank(applyObjectDo.getProcessInstanceId())) {
+                return resMap.setErr("申请数据有误");
+            }
+            if (applyObjectDo.getStatus() != null && applyObjectDo.getStatus() == 1 || applyObjectDo.getStatus() == 2) {
+                return resMap.setErr("审批已完成不能查询");
+            }
+
+//            Resp<List<WfRejectTaskInfo>> listResp = workflow.rejectTaskList(applyObjectDo.getProcessInstanceId());
+//            if (RespUtil.success(listResp)) {
+//                return resMap.setSingleOk(listResp.getData(), "查询流程可撤回的节点列表成功").getResultMap();
+//            }
+//
+//            return resMap.setErr(listResp.getMsg()).getResultMap();
+        } catch (Exception ex) {
+            resMap.setErr("查询流程可撤回的节点列表失败");
+            logger.error("查询流程可撤回的节点列表失败:", ex);
+        }
+        return resMap.getResultMap();
+    }
+}

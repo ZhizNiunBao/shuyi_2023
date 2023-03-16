@@ -259,11 +259,11 @@
           <version>2.7.0</version>
       </dependency>-->
 
-    <dependency>
+    <!--<dependency>
       <groupId>cn.bywin.business</groupId>
       <artifactId>auth-bydata</artifactId>
       <version>3.0.0-beta</version>
-    </dependency>
+    </dependency>-->
 
     <dependency>
       <groupId>com.taosdata.jdbc</groupId>
