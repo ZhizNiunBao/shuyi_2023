@@ -134,9 +134,8 @@
         </dependency>
 
         <dependency>
-            <groupId>cn.bywin.business</groupId>
+            <groupId>cn.bywin</groupId>
             <artifactId>auth-bydata</artifactId>
-            <version>3.0.0-beta</version>
         </dependency>
 
     </dependencies>
