@@ -21,7 +21,6 @@ import cn.bywin.business.common.base.UserDo;
 import cn.bywin.business.common.login.LoginUtil;
 import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
-import cn.bywin.business.federal.ApiPmsService;
 import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.system.SysLogService;
 import cn.bywin.business.service.system.SysMenuService;
@@ -82,9 +81,6 @@ public class SystemController extends BaseController {
     private NodePartyService nodePartyService;
     @Autowired
     private SysLogService sysLogService;
-
-    @Autowired
-    private ApiPmsService apiPmsService;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
@@ -458,61 +454,6 @@ public class SystemController extends BaseController {
             }
         }
         return list;
-    }
-
-
-    @ApiOperation(value = "用户更改审批", notes = "用户更改审批")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "userId", value = "用户id", dataType = "String", required = true, paramType = "query", example = "")
-            , @ApiImplicitParam(name = "isLock", value = "1 为 通过 0 为未通过", dataType = "int", required = true, paramType = "query", example = "")
-
-    })
-    @RequestMapping(value = "/locklogin", method = {RequestMethod.GET})
-    public Map<String, Object> locklogin(HttpServletRequest request, String userId, Integer isLock) {
-        ResponeMap result = genResponeMap();
-        try {
-            UserDo userDo = LoginUtil.getUser(request);
-            if (userDo == null) {
-                return result.setErr("用户未登录").getResultMap();
-            }
-            if (isLock == null) {
-                return result.setErr("isLock为空").getResultMap();
-            }
-
-            SysRoleDo sysRoleDo = sysUserService.getRole(userDo.getUserId());
-            if (!FLSYSTEM.equals(sysRoleDo.getId()) && !ADMIN.equals(sysRoleDo.getId())) {
-                return result.setErr("该用户权限不是管理员").getResultMap();
-            }
-            SysUserDo sysUserDo = sysUserService.findById(userId);
-            if (sysUserDo == null) {
-                return result.setErr("用户不存在").getResultMap();
-            }
-            SysRoleDo info = sysUserService.getRole(userId);
-
-            if (info != null && FLSYSTEM.equals(info.getId())) {
-                return result.setErr("不能对管理员进行此操作").getResultMap();
-            }
-            if(StringUtils.isBlank( sysUserDo.getNodePartyId() )) {
-                FNodePartyDo nodePartyDo = nodePartyService.findFirst();
-                sysUserDo.setNodePartyId( nodePartyDo.getId() );
-            }
-            sysUserDo.setIsLock(isLock);
-            SysUserDo syncUser = new SysUserDo();
-            MyBeanUtils.copyBeanNotNull2Bean( sysUserDo,syncUser );
-            syncUser.setPassword( "" );
-            PmsResult pmsResult = apiPmsService.syncUser( syncUser, userDo.getTokenId() );
-            if( pmsResult.isSuccess() ) {
-                sysUserService.updateNoNull( sysUserDo );
-                result.setOk("更改审批成功");
-            }
-            else{
-                result.setErr("更改审批失败:"+pmsResult.getMsg());
-            }
-        } catch (Exception e) {
-            logger.error("更改审批失败", e);
-            result.setErr("更改审批失败");
-        }
-        return result.getResultMap();
     }
 
     @ApiOperation(value = "菜单权限赋值", notes = "菜单权限赋值")

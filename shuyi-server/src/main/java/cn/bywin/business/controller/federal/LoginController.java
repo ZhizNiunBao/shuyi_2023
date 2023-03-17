@@ -26,7 +26,6 @@ import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.Constants;
 import cn.bywin.business.common.util.JsonUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
-import cn.bywin.business.federal.ApiPmsService;
 import cn.bywin.business.service.federal.ModelJobService;
 import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.system.SysLogService;
@@ -92,8 +91,6 @@ public class LoginController extends BaseController {
     private NodePartyService nodePartyService;
     @Autowired
     private SysLogService sysLogService;
-    @Autowired
-    private ApiPmsService apiPmsService;
 
     @Autowired
     private ModelJobService modelJobService;
@@ -170,99 +167,6 @@ public class LoginController extends BaseController {
         }
         return result.getResultMap();
     }
-
-    @ApiOperation(value = "更新节点用户信息", notes = "更新节点用户信息")
-    @RequestMapping(value = "/update", method = {RequestMethod.POST})
-    public Map<String, Object> update(@RequestBody UserVo userVo, HttpServletRequest request) {
-        ResponeMap result = genResponeMap();
-        if (StringUtils.isNotBlank(userVo.getMobile())) {
-            return result.setErr("手机号不能更新").getResultMap();
-        }
-        try {
-            UserDo userDo = LoginUtil.getUser(request);
-            if (userDo == null) {
-                return result.setErr("用户未登录").getResultMap();
-            }
-            SysRoleDo sysRoleDo = sysUserService.getRole(userDo.getUserId());
-            if (sysRoleDo == null || !FLSYSTEM.equals(sysRoleDo.getId())) {
-                return result.setErr("该用户权限不是超级管理员").getResultMap();
-            }
-            FNodePartyDo nodePartyDo = nodePartyService.findFirst();
-            nodePartyDo.setName(userVo.getUsername());
-            nodePartyDo.setIcon(userVo.getIcon());
-            nodePartyDo.setIsOpen(userVo.getIsOpen());
-            nodePartyDo.setIsStatus(userVo.getIsStatus());
-            FNodePartyDo pmsNode = new FNodePartyDo();
-            MyBeanUtils.copyBean2Bean(pmsNode, nodePartyDo);
-            pmsNode.setIp("*");
-            //接口推送到pms
-            PmsResult pmsResult = apiPmsService.syncNode(pmsNode);
-            if (!pmsResult.isSuccess()) {
-                return result.setErr("操作失败，检查pms服务是否正常").getResultMap();
-            }
-            nodePartyService.updateNoNull(nodePartyDo);
-
-            result.setOk("更新成功");
-        } catch (Exception e) {
-            logger.error("更新失败", e);
-            result.setErr("更新失败");
-        }
-        return result.getResultMap();
-    }
-
-    @ApiOperation(value = "当前用户更新信息", notes = "当前用户更新信息")
-    @RequestMapping(value = "/curuserupdate", method = {RequestMethod.POST})
-    public Map<String, Object> curUserUpdate(@RequestBody SysUserDo userVo, HttpServletRequest request) {
-        ResponeMap result = genResponeMap();
-        if (StringUtils.isNotBlank(userVo.getMobile())) {
-            return result.setErr("手机号不能更新").getResultMap();
-        }
-        try {
-            UserDo userDo = LoginUtil.getUser(request);
-            if (userDo == null) {
-                return result.setErr("用户未登录").getResultMap();
-            }
-            if (StringUtils.isBlank(userDo.getUserId())) {
-                return result.setErr("用户id未登录").getResultMap();
-            }
-            SysUserDo info = sysUserService.findById(userDo.getUserId());
-            SysUserDo old = new SysUserDo();
-            MyBeanUtils.copyBeanNotNull2Bean(info, old);
-            MyBeanUtils.copyBeanNotNull2Bean(userVo, info);
-            info.setId(old.getId());
-            info.setMobile(null);
-            info.setPassword(null);
-            info.setCreatorAccount(null);
-            info.setCreatorId(null);
-            info.setCreatorName(null);
-            info.setIsLock(null);
-            info.setRegTime(null);
-            info.setCreatedTime(null);
-            //info.setIsLock(old.getIsLock());
-            info.setModifiedTime(ComUtil.getCurTimestamp());
-            sysUserService.updateNoNull(info);
-            if (!old.getUsername().equals(info.getUsername())) {
-                SysRoleDo sysRoleDo = sysUserService.getRole(userDo.getUserId());
-                if (sysRoleDo != null && FLSYSTEM.equals(sysRoleDo.getId())) {
-                    FNodePartyDo nodePartyDo = nodePartyService.findAll().get(0);
-                    nodePartyDo.setName(info.getUsername());
-                    nodePartyService.updateNoNull(nodePartyDo);
-                    //接口推送到pms
-                    PmsResult pmsResult = apiPmsService.syncNode(nodePartyDo);
-                    if (!pmsResult.isSuccess()) {
-                        return result.setErr("操作失败，检查pms服务是否正常").getResultMap();
-                    }
-                }
-            }
-
-            result.setOk("更新成功");
-        } catch (Exception e) {
-            logger.error("更新失败", e);
-            result.setErr("更新失败");
-        }
-        return result.getResultMap();
-    }
-
 
     @ApiOperation(value = "更新用户密码", notes = "更新用户密码")
     @RequestMapping(value = "/updatepwd", method = {RequestMethod.POST})
@@ -575,16 +479,8 @@ public class LoginController extends BaseController {
                 sysLogDo.setContent(String.format("用户%s向本节点进行注册,用户手机号为:%s、邮箱为:%s。如需通过审批，请管理员进行操作"
                         , sysUserDo.getUsername(), sysUserDo.getMobile(), sysUserDo.getEmail()));
                 sysLogDo.setStatus(0);
-                if (sysUserService.findAll().size() == 0) {
-                    //接口推送到pms
-                    PmsResult pmsResult = apiPmsService.syncNode(nodePartyDo);
-                    if (!pmsResult.isSuccess()) {
-                        return result.setErr("操作失败，检查pms服务是否正常").getResultMap();
-                    }
-                }
                 sysLogService.insertBean(sysLogDo);
             }
-
 
             result.setOk("注册成功");
         } catch (Exception e) {
@@ -698,147 +594,6 @@ public class LoginController extends BaseController {
         while (em.hasMoreElements()) {
             request.getSession().removeAttribute(em.nextElement().toString());
         }
-    }
-
-
-    @ApiOperation(value = "提交审批", notes = "提交审批")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "nodeId", value = "节点id", dataType = "String", required = true, paramType = "query", example = "1")
-            , @ApiImplicitParam(name = "dataId", value = "数据id", dataType = "String", required = true, paramType = "query", example = "1")
-            , @ApiImplicitParam(name = "approve", value = "审批状态改为2", dataType = "String", required = true, paramType = "query", example = "1")
-            , @ApiImplicitParam(name = "content", value = "审批理由", dataType = "String", required = true, paramType = "query", example = "1")
-            , @ApiImplicitParam(name = "projectId", value = "项目id", dataType = "String", required = true, paramType = "query", example = "1")
-
-    })
-    @RequestMapping(value = "/syncapprove", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object syncapprove(@RequestBody FDataApproveVo info, HttpServletRequest request) {
-        ResponeMap result = new ResponeMap();
-        try {
-            if (StringUtils.isBlank(info.getDataId())) {
-                return result.setErr("数据id不能为空").getResultMap();
-            }
-            if (StringUtils.isBlank(info.getNodeId())) {
-                return result.setErr("节点id不能为空").getResultMap();
-            }
-            if (StringUtils.isBlank(info.getProjectId())) {
-                return result.setErr("项目id不能为空").getResultMap();
-            }
-            if (info.getApprove() == null) {
-                return result.setErr("审批状态不能为空").getResultMap();
-            }
-            UserDo ud = LoginUtil.getUser(request);
-            if (ud == null) {
-                return result.setErr("用户未登录").getResultMap();
-            }
-            FDataApproveDo fDataApproveDo = apiPmsService.byProjectNodeDataId(info);
-
-            if (fDataApproveDo == null) {
-                return result.setErr("数据不存在").getResultMap();
-            }
-            apiPmsService.syncApprove(info);
-            result.setOk("提交审批成功");
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            result.setErr("提交审批异常");
-        }
-        return result.getResultMap();
-    }
-
-
-    @ApiOperation(value = "修改审批", notes = "修改审批")
-    @ApiImplicitParams({
-    })
-    @RequestMapping(value = "/updateapprove", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object updateApprove(@RequestBody FDataApproveDo info, HttpServletRequest request) {
-        ResponeMap result = new ResponeMap();
-        try {
-
-            if (StringUtils.isBlank(info.getId())) {
-                return result.setErr("审批id不能为空").getResultMap();
-            }
-            UserDo ud = LoginUtil.getUser(request);
-            if (ud == null) {
-                return result.setErr("用户未登录").getResultMap();
-            }
-            PmsResult pmsResult = apiPmsService.syncApprove(info);
-            if (!pmsResult.isSuccess()) {
-                return result.setErr("操作失败，检查pms服务是否正常").getResultMap();
-            }
-            result.setOk("修改审批成功");
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            result.setErr("修改审批异常");
-        }
-        return result.getResultMap();
-    }
-
-
-    @ApiOperation(value = "删除审批", notes = "删除审批")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "id", value = "审批id", dataType = "String", required = true, paramType = "query", example = "1")
-
-    })
-    @RequestMapping(value = "/delapprove", method = {RequestMethod.DELETE})
-    @ResponseBody
-    public Object delApprove(String id, HttpServletRequest request) {
-        ResponeMap result = new ResponeMap();
-        try {
-            if (StringUtils.isBlank(id)) {
-                return result.setErr("审批id不能为空").getResultMap();
-            }
-            FDataApproveDo fDataApproveDo = new FDataApproveDo();
-            fDataApproveDo.setId(id);
-            PmsResult pmsResult = apiPmsService.delApprove(fDataApproveDo);
-            if (!pmsResult.isSuccess()) {
-                return result.setErr("操作失败，检查pms服务是否正常").getResultMap();
-            }
-            result.setOk("操作成功");
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            result.setErr("删除审批异常");
-        }
-        return result.getResultMap();
-    }
-
-    @ApiOperation(value = "审批列表", notes = "审批列表")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "type", value = "审批类型（2我的待审批 1 我的审批成功 0 我的审批失败 9 我发起的审批列表）", dataType = "String", required = true, paramType = "query", example = "1")
-
-    })
-    @RequestMapping(value = "/getapprove", method = {RequestMethod.GET})
-    @ResponseBody
-    public Object getapprove(FDataApproveVo info, HttpServletRequest request) {
-        ResponeMap result = new ResponeMap();
-        try {
-            UserDo ud = LoginUtil.getUser(request);
-            if (ud == null) {
-                return result.setErr("用户未登录").getResultMap();
-            }
-            if (info.getType() == null) {
-                return result.setErr("审批类型不能为空").getResultMap();
-            }
-            info.genPage();
-            if (info.getType() == 9) {
-                info.setCreatorId(ud.getUserId());
-            } else if (info.getType() == 1) {
-                info.setUserId(ud.getUserId());
-                info.setApprove((info.getType()));
-            } else if (info.getType() == 2) {
-                info.setUserId(ud.getUserId());
-                info.setApprove(info.getType());
-            } else if (info.getType() == 0) {
-                info.setUserId(ud.getUserId());
-                info.setApprove(info.getType());
-            }
-            logger.debug(JsonUtil.toSimpleJson(info));
-            return apiPmsService.getApprove(info);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            result.setErr("获取审批列表失败").getResultMap();
-        }
-        return result.getResultMap();
     }
 
     @ApiOperation(value = "模型收藏列表", notes = "模型收藏列表")
