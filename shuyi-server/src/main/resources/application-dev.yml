@@ -8,7 +8,7 @@ spring:
     #druid:
     #old mysql driver
     driver-class-name: com.mysql.jdbc.Driver
-    jdbc-url: jdbc:mysql://192.168.96.96:3306/fed_server_modaf?characterEncoding=utf8&useOldAliasMetadataBehavior=true&allowMultiQueries=true&useSSL=false
+    jdbc-url: jdbc:mysql://192.168.96.96:3306/shuyi_server_modaf?characterEncoding=utf8&useOldAliasMetadataBehavior=true&allowMultiQueries=true&useSSL=false
     username: root
     password: Bywin@123!@#
     initialSize: 3
@@ -53,6 +53,12 @@ feign:
       default:
         connectTimeout: 60000
         readTimeout: 60000
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
 
 hystrix:
   command:
