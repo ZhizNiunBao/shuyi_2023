@@ -125,9 +125,6 @@ public class OlkModelTaskController extends BaseController {
     private DataSourceService dbSourceService;
 
     @Autowired
-    private HetuJdbcOperate hetuJdbcOperate;
-
-    @Autowired
     private HetuJdbcOperateComponent hetuJdbcOperateComponent;
 
     @Autowired
@@ -562,7 +559,7 @@ public class OlkModelTaskController extends BaseController {
                 String hetuUrl = hutuConfig.getUrl();
                 List<Object> paraSetList = new ArrayList<>();
                 if( StringUtils.isBlank( info.getDcId() )) { //跨节点运行
-                    try ( HetuJdbcOperate dbop = this.hetuJdbcOperate ) {
+                    try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate()) {
                         for ( TOlkModelElementDo elementDo : eleList ) {
                             String viewSql = String.format("CREATE OR REPLACE VIEW %s.tmp_%s AS %s", olkVdmCatalogViewName,elementDo.getId(), elementDo.getRunSql());
                             dbop.execute( viewSql );
@@ -576,7 +573,7 @@ public class OlkModelTaskController extends BaseController {
                         return  resMap.setErr( "节点未启用" ).getResultMap();
                     }
                     //HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-                    try(HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo)){
+                    try(HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate()){
                         for ( TOlkModelElementDo elementDo : eleList ) {
                             String viewSql = String.format("CREATE OR REPLACE VIEW %s.tmp_%s AS %s", olkVdmCatalogViewName,elementDo.getId(), elementDo.getRunSql());
                             dbop.execute( viewSql );
@@ -1115,7 +1112,7 @@ public class OlkModelTaskController extends BaseController {
                     //已处理
                     String olkVdmCatalogViewName = SysParamSetOp.readValue( "olkVdmCatalogViewName", "" );
                     if ( StringUtils.isBlank( modelDo.getDcId() ) ) { //跨节点运行
-                        try ( HetuJdbcOperate dbop = this.hetuJdbcOperate ) {
+                        try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate()) {
                             String viewSql = String.format( "select * from  %s.tmp_%s limit 100 ", olkVdmCatalogViewName, modelDo.getId() );
                             list = dbop.selectData( viewSql );
                         }
@@ -1126,7 +1123,7 @@ public class OlkModelTaskController extends BaseController {
                             return resMap.setErr( "节点未启用" ).getResultMap();
                         }
                         //HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-                        try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo) ) {
+                        try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate() ) {
                             String viewSql = String.format( "select * from  %s.tmp_%s limit 100 ", olkVdmCatalogViewName, modelDo.getId() );
                             list = dbop.selectData( viewSql );
                         }
@@ -1604,7 +1601,7 @@ public class OlkModelTaskController extends BaseController {
 
                 String olkVdmCatalogViewName = SysParamSetOp.readValue( "olkVdmCatalogViewName","" );
                 if ( StringUtils.isBlank( modelDo.getDcId() ) ) { //跨节点运行
-                    try ( HetuJdbcOperate dbop = this.hetuJdbcOperate ) {
+                    try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate()) {
                         String viewSql = String.format( "select * from  %s.tmp_%s limit 100 ", olkVdmCatalogViewName, meData.getId() );
                         list = dbop.selectData( viewSql );
                     }
@@ -1615,7 +1612,7 @@ public class OlkModelTaskController extends BaseController {
                         return resMap.setErr( "节点未启用" ).getResultMap();
                     }
                     //HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-                    try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo) ) {
+                    try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate() ) {
                         String viewSql = String.format( "select * from  %s.tmp_%s limit 100 ", olkVdmCatalogViewName, meData.getId() );
                         list = dbop.selectData( viewSql );
                     }

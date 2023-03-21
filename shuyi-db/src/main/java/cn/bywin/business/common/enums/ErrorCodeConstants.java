@@ -17,4 +17,8 @@ public interface ErrorCodeConstants {
     ErrorCode NOT_FOUND = new ErrorCode("404", "请求未找到");
     ErrorCode METHOD_NOT_ALLOWED = new ErrorCode("405", "请求方法不正确");
 
+    // ========== 组件异常 ==========
+    ErrorCode HETU_CONNECTION_ERROR = new ErrorCode("601", "Hetu 连接异常");
+    ErrorCode HETU_EXECUTE_ERROR = new ErrorCode("602", "Hetu 语句执行异常");
+
 }

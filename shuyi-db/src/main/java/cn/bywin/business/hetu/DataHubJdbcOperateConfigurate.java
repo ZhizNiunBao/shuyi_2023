@@ -37,39 +37,17 @@ public class DataHubJdbcOperateConfigurate {
     @Value("${olk.password:}")
     private String password;
 
+    @Value("${olk.encryptPassword}")
+    private Integer encryptPassword;
+
     @Autowired
     private HetuJdbcOperateComponent hetuJdbcOperateComponent;
-
-    @Bean(name = "dataHubProperties")
-    public Properties createMasterProperties() {
-        Properties properties = new Properties();
-        properties.setProperty(USERNAME, user);
-        return properties;
-    }
-
-    @Bean
-    @Scope(value = "prototype", proxyMode = ScopedProxyMode.TARGET_CLASS)
-    public HetuJdbcOperate createMasterJdbcOperate(@Qualifier("dataHubProperties") Properties masterProperties) throws SQLException {
-        Properties newProperties = new Properties();
-        newProperties.putAll(masterProperties);
-
-        HetuJdbcOperate hetuJdbcOperate = new HetuJdbcOperate();
-        hetuJdbcOperate.init(url, newProperties);
-        return hetuJdbcOperate;
-    }
-
-    @Bean(name = "dataHubHetuInfo")
-    public HetuInfo createMasterHetuInfo(@Qualifier("dataHubProperties") Properties masterProperties) {
-        HetuInfo masterHetuInfo = new HetuInfo();
-        masterHetuInfo.setConnectionUrl(connectionUrl);
-        masterHetuInfo.setHetuProperties(masterProperties);
-        return masterHetuInfo;
-    }
 
     @Bean
     public TOlkDcServerDo createMasterDcServerInfo() {
         TOlkDcServerDo dcServerInfo = new TOlkDcServerDo();
         dcServerInfo.setJdbcUrl(url);
+        dcServerInfo.setEncryptFlag(encryptPassword);
         dcServerInfo.setConnectionUrl(connectionUrl);
         dcServerInfo.setConnectionUser(user);
         dcServerInfo.setConnectionPwd(password);

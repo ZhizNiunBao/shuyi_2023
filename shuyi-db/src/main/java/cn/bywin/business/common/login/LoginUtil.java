@@ -162,18 +162,7 @@ public class LoginUtil {
 	 * 获取session
 	 */
 	public static HttpSession getSession() {
-		return getServletRequest().getSession();
-	}
-
-	/**
-	 * 获取request
-	 */
-	public static HttpServletRequest getServletRequest() {
-		try {
-			return getServletRequestAttributes().getRequest();
-		} catch (Exception e) {
-			return null;
-		}
+		return getRequest().getSession();
 	}
 
 	public static ServletRequestAttributes getServletRequestAttributes() {

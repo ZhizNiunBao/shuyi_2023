@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,15 +20,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class HetuJdbcOperateComponent {
 
+    @Autowired
+    private TOlkDcServerDo dcServerConfig;
+
     private static final String PASSWORD_FIELD = "password";
 
     private static final String ENCRYPTED_PROPERTIES_FIELD = "encrypted-properties";
 
     /**
-     * 根据节点配置获取动态目录配置
-     * @param dcServerConfig 节点配置
+     * 获取动态目录配置
      */
-    public HetuInfo genHetuInfo(TOlkDcServerDo dcServerConfig) {
+    public HetuInfo genHetuInfo() {
         Properties properties = genHetuProperties(dcServerConfig);
         HetuInfo hetuInfo = new HetuInfo();
         hetuInfo.setHetuProperties(properties);
@@ -68,10 +71,9 @@ public class HetuJdbcOperateComponent {
 
     /**
      * 根据节点配置、用户信息获取连接
-     * @param dcServerConfig 节点配置
      * @return hetu 操作类
      */
-    public HetuJdbcOperate genHetuJdbcOperate(TOlkDcServerDo dcServerConfig) throws Exception {
+    public HetuJdbcOperate genHetuJdbcOperate() {
         Properties properties = genHetuProperties(dcServerConfig);
         HetuJdbcOperate hetuJdbcOperate = new HetuJdbcOperate();
         hetuJdbcOperate.init( dcServerConfig.getJdbcUrl(), properties );

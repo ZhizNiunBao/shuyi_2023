@@ -618,9 +618,6 @@ public class OlkObjectController extends BaseController {
             List<String> idList = new ArrayList<>();
             for ( TOlkObjectDo info : list ) {
                 idList.add( info.getId() );
-                if ( StringUtils.isBlank( info.getNodePartyId() ) ) {
-                    info.setNodePartyId( nodePartyDo.getId() );
-                }
 
                 List<TOlkDataNodeDo> oldList = dataNodeService.findByDataId( info.getId() );
                 List<TOlkDataNodeDo> delDnList = new ArrayList<>();
@@ -659,7 +656,6 @@ public class OlkObjectController extends BaseController {
                 TOlkObjectDo tmp = new TOlkObjectDo();
                 tmp.setId( info.getId() );
                 tmp.setSynFlag( 0 );
-                tmp.setNodePartyId( info.getNodePartyId() );
                 tmp.setShareTime( info.getShareTime() );
                 tmp.setShareFlag( info.getShareFlag() );
                 olkObjectService.updateWithNodes( tmp, addDnList, null, delDnList );
@@ -781,109 +777,6 @@ public class OlkObjectController extends BaseController {
         catch ( Exception ex ) {
             resMap.setErr( "查询联邦分析失败" );
             logger.error( "查询联邦分析失败:", ex );
-        }
-        return resMap.getResultMap();
-    }
-
-    @ApiOperation(value = "对用户授权", notes = "对用户授权")
-    @ApiImplicitParams({
-//            @ApiImplicitParam(name = "stype", value = "类型 database,schema,table ", dataType = "String",example = "database,schema,table", required = true, paramType = "query"),
-//            @ApiImplicitParam(name = "dataId", value = "数据id", dataType = "String", required = true, paramType = "query"),
-//            @ApiImplicitParam(name = "userId", value = "用户Id", dataType = "String", required = true, paramType = "query")
-    })
-    @RequestMapping(value = "/grantouser", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object grantoUser(@RequestBody List<OlkObjectWithFieldsVo> beanList,  HttpServletRequest request ) {
-        ResponeMap resMap = this.genResponeMap();
-        try {
-//            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest( request );
-//            String dataId = hru.getNvlPara( "dataId" );
-//            String userId = hru.getNvlPara( "userId" );
-//            String stype = hru.getNvlPara( "stype" );
-
-            if ( beanList ==null || beanList.size()==0 ) {
-                return resMap.setErr( "数据不能为空" ).getResultMap();
-            }
-
-            List<String> userIdList = new ArrayList<>();
-            List<String> dataIdList = new ArrayList<>();
-            List<String> sameIdList = new ArrayList<>();
-            for ( OlkObjectWithFieldsVo tmp : beanList ) {
-                if( StringUtils.isBlank( tmp.getGrantUserId() ) ){
-                    return resMap.setErr( "授权用户id不能为空" ).getResultMap();
-                }
-                if( StringUtils.isBlank( tmp.getId() ) ){
-                    return resMap.setErr( "数据id不能为空" ).getResultMap();
-                }
-
-                String tmpId = tmp.getId()+"_"+tmp.getGrantUserId();
-                if( sameIdList.indexOf( tmpId )>=0 ){
-                    return resMap.setErr( "数据授权重复" ).getResultMap();
-                }
-                if( userIdList.indexOf( tmp.getGrantUserId() )< 0 ){
-                    userIdList.add( tmp.getGrantUserId() );
-                }
-                if( dataIdList.indexOf( tmp.getId() ) < 0 ){
-                    dataIdList.add( tmp.getId() );
-                }
-            }
-
-            UserDo user = LoginUtil.getUser( request );
-
-            SysUserDo qryUser = new SysUserDo();
-            qryUser.setId( String.join( ",", userIdList ) );
-            qryUser.setIsLock( 1 );
-            ListResp<SysUserDo> retUser = apiTruModelService.nodeUserList( qryUser, user.getTokenId() );
-            if ( !retUser.isSuccess() ) {
-                return resMap.setErr( "验证用户失败，" + retUser.getMsg() ).getResultMap();
-            }
-            if ( retUser.getData().size() != userIdList.size() ) {
-                return resMap.setErr( "部分用户不存在" ).getResultMap();
-            }
-            Map<String, SysUserDo> userMap = retUser.getData().stream().collect( Collectors.toMap( x -> x.getId(), x -> x ) );
-
-            Example exp = new Example( TOlkObjectDo.class );
-            Example.Criteria criteria = exp.createCriteria();
-            criteria.andIn( "id", dataIdList ).andEqualTo( "enable", 1 );
-            List<TOlkObjectDo> objList = olkObjectService.findByExample( exp );
-            if ( objList.size() != dataIdList.size() ) {
-                return resMap.setErr( "部分对象已变化或不存在" ).getResultMap();
-            }
-
-            List<FDataApproveDo> list = new ArrayList<>();
-            for ( TOlkObjectDo objDo : objList ) {
-                for ( String s : userIdList ) {
-                    if ( s.equals( objDo.getUserId() ) ) {
-                        return resMap.setErr( "部分为自己对象无需授权" ).getResultMap();
-                    }
-                    FDataApproveDo da = new FDataApproveDo();
-                    da.setDataId( objDo.getId() );
-                    da.setNodeId( objDo.getNodePartyId() );
-                    da.setUserId( objDo.getUserId() );
-                    da.setUserName( objDo.getUserName() );
-                    da.setDataCatalog( "table" );
-                    da.setTypes( 1 );
-                    da.setApprove( 1 );
-                    da.setApproval( "直接授权" );
-                    da.setId( ComUtil.genId() );
-                    SysUserDo userDo = userMap.get( s );
-                    da.setCreatorId( userDo.getId() );
-                    da.setCreatorAccount( userDo.getMobile() );
-                    da.setCreatorName( userDo.getUsername() );
-                    da.setCreatedTime( ComUtil.getCurTimestamp() );
-                    list.add( da );
-                }
-            }
-            ListResp<FDataApproveDo> retVal = apiOlkDbService.saveGrantObject( list, user.getTokenId() );
-            if ( !retVal.isSuccess() ) {
-                return resMap.setErr( "授权失败," + retVal.getMsg() ).getResultMap();
-            }
-
-            resMap.setOk( "授权成功" );
-        }
-        catch ( Exception ex ) {
-            resMap.setErr( "授权失败" );
-            logger.error( "授权失败:", ex );
         }
         return resMap.getResultMap();
     }

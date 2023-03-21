@@ -112,9 +112,6 @@ public class BydbDatabaseController extends BaseController {
     private String bydbRef = "bydb_ref_";
 
     @Autowired
-    private HetuJdbcOperate hetuJdbcOperate;
-
-    @Autowired
     private HetuJdbcOperateComponent hetuJdbcOperateComponent;
 
     /*@ApiOperation(value = "按配置新建bydb数据目录", notes = "按配置新建bydb数据目录")

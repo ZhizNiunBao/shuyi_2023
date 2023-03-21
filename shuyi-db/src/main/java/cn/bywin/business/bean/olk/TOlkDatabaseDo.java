@@ -12,18 +12,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "t_olk_database")
 public class TOlkDatabaseDo extends SidEntityDo {
-    /**
-     * 节点id
-     */
-    @ApiModelProperty(required = true, value = "节点id", hidden = true, example = "")
-    @Column(name = "dc_id")
-    private String dcId;
-    /**
-     * 节点id
-     */
-    @ApiModelProperty(required = false, value = "节点id", hidden = false, example = "")
-    @Column(name = "node_party_id")
-    private String nodePartyId;
+
 	/**
      * 归属账号
      */
@@ -82,9 +71,9 @@ public class TOlkDatabaseDo extends SidEntityDo {
     /**
      * 节点编码
      */
-    @ApiModelProperty(required = true, value = "节点编码，最大长度(20)", hidden = true, example = "")
-    @Column(name = "dc_code")
-    private String dcCode;
+    @ApiModelProperty(required = true, value = "parentId", hidden = true, example = "")
+    @Column(name = "parent_id")
+    private String parentId;
     /**
      * 中文名称
      */

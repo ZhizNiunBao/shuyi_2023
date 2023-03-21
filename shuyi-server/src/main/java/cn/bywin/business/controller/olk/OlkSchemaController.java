@@ -548,10 +548,8 @@ public class OlkSchemaController extends BaseController {
                     }
                     FDataApproveDo da = new FDataApproveDo();
                     da.setDataId( objDo.getId() );
-                    da.setNodeId( objDo.getNodePartyId() );
                     da.setUserId( objDo.getUserId() );
                     da.setUserName( objDo.getUserName() );
-                    da.setNodeId( objDo.getNodePartyId() );
                     da.setDataCatalog( "schema" );
                     da.setTypes( 1 );
                     da.setApprove( 1 );

@@ -13,18 +13,6 @@ import javax.persistence.Table;
 @Table(name = "t_olk_field")
 public class TOlkFieldDo extends SidEntityDo {
     /**
-     * 节点id
-     */
-    @ApiModelProperty(value = "节点id，最大长度(32)", hidden = true, example = "")
-    @Column(name = "dc_id")
-    private String dcId;
-    /**
-     * 节点id
-     */
-    @ApiModelProperty(required = false, value = "节点id", hidden = false, example = "")
-    @Column(name = "node_party_id")
-    private String nodePartyId;
-    /**
      * 归属账号
      */
     @ApiModelProperty(required = false, value = "归属账号", hidden = false, example = "")

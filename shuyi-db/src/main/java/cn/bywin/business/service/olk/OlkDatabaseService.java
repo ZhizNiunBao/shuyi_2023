@@ -50,8 +50,8 @@ public class OlkDatabaseService extends BaseServiceImpl<TOlkDatabaseDo, String> 
 	}
 
 
-	public Integer findMaxOrder( String dcId){
-		return commMapper.findMaxOrder( dcId );
+	public Integer findMaxOrder(){
+		return commMapper.findMaxOrder();
 	}
 
 	/**

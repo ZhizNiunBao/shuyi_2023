@@ -1,12 +1,24 @@
 package cn.bywin.business.hetu;
 
+import static cn.bywin.business.common.enums.ErrorCodeConstants.HETU_CONNECTION_ERROR;
+import static cn.bywin.business.common.enums.ErrorCodeConstants.HETU_EXECUTE_ERROR;
+
+import cn.bywin.business.common.except.ServerException;
 import cn.common.base.AuditLog;
 import com.google.common.collect.Maps;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.sql.*;
-import java.util.*;
 
 /**
  * hetu 操作类
@@ -18,9 +30,13 @@ public class HetuJdbcOperate implements AutoCloseable {
 
     private Connection connection;
 
-    public void init(String url, Properties properties) throws SQLException {
+    public void init(String url, Properties properties) {
         TimeZone.setDefault( TimeZone.getTimeZone( "Asia/Shanghai" ) );
-        connection = DriverManager.getConnection(url, properties);
+        try {
+            connection = DriverManager.getConnection(url, properties);
+        } catch (SQLException e) {
+            throw new ServerException(HETU_CONNECTION_ERROR.getCode(), HETU_CONNECTION_ERROR.getMessage() + ": " + e.getMessage());
+        }
     }
 
     public Connection getConnection() {
@@ -34,7 +50,7 @@ public class HetuJdbcOperate implements AutoCloseable {
      * @throws SQLException
      */
     @AuditLog
-    public List<Map<String, Object>> selectData(String sql) throws SQLException {
+    public List<Map<String, Object>> selectData(String sql) {
         List<Map<String, Object>> resultData = new ArrayList<>();
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sql)){
@@ -48,12 +64,14 @@ public class HetuJdbcOperate implements AutoCloseable {
                 }
                 resultData.add(rowData);
             }
+        } catch (SQLException e) {
+            throw new ServerException(HETU_EXECUTE_ERROR.getCode(), HETU_EXECUTE_ERROR.getMessage() + ": " + e.getMessage());
         }
         return resultData;
     }
 
     @AuditLog
-    public List<Map<String,Object>>  selectData(String sql,Class<? extends Map> cls) throws SQLException, IllegalAccessException, InstantiationException {
+    public List<Map<String,Object>>  selectData(String sql,Class<? extends Map> cls) {
         List<Map<String,Object>> resultData = new ArrayList<>();
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sql)){
@@ -67,6 +85,8 @@ public class HetuJdbcOperate implements AutoCloseable {
                 }
                 resultData.add(rowData);
             }
+        } catch (SQLException | InstantiationException | IllegalAccessException e) {
+            throw new ServerException(HETU_EXECUTE_ERROR.getCode(), HETU_EXECUTE_ERROR.getMessage() + ": " + e.getMessage());
         }
         return resultData;
     }
@@ -78,11 +98,13 @@ public class HetuJdbcOperate implements AutoCloseable {
      * @throws SQLException
      */
     @AuditLog
-    public boolean execute(String sql) throws SQLException {
+    public boolean execute(String sql) {
         logger.debug(sql);
         try (Statement statement = connection.createStatement()){
             statement.execute(sql);
             return true;
+        } catch (SQLException e) {
+            throw new ServerException(HETU_EXECUTE_ERROR.getCode(), HETU_EXECUTE_ERROR.getMessage() + ": " + e.getMessage());
         }
     }
 

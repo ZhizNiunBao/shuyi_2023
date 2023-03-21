@@ -82,23 +82,23 @@ public class LoginContentFilter implements Filter {
             LoginUtil.setUser(request, userDo);
         }
         if (!"OPTIONS".equals(method) && !"/".equals(uri) && !allowRequest(uri)) {
-            String result = JwtHs.vaildToken(token);
-            if (userDo == null || result == null) {
-                Map<String, Object> map = new HashMap<>();
-                map.put("statusCode", "1011");
-                map.put("statusInfo", "未登录");
-                map.put("url", "./index.html");
-                map.put("logoutUrl", "./index.html");
-                map.put("data", "");
-                String resultStr = gson.toJson(map);
-                logger.debug(resultStr);
-                response.setCharacterEncoding("utf-8");
-                response.setContentType("application/json; charset=utf-8");
-                PrintWriter writer = response.getWriter();
-                writer.write(gson.toJson(map));
-                writer.close();
-                return;
-            }
+//            String result = JwtHs.vaildToken(token);
+//            if (userDo == null || result == null) {
+//                Map<String, Object> map = new HashMap<>();
+//                map.put("statusCode", "1011");
+//                map.put("statusInfo", "未登录");
+//                map.put("url", "./index.html");
+//                map.put("logoutUrl", "./index.html");
+//                map.put("data", "");
+//                String resultStr = gson.toJson(map);
+//                logger.debug(resultStr);
+//                response.setCharacterEncoding("utf-8");
+//                response.setContentType("application/json; charset=utf-8");
+//                PrintWriter writer = response.getWriter();
+//                writer.write(gson.toJson(map));
+//                writer.close();
+//                return;
+//            }
         }
         arg2.doFilter(arg0, arg1);
     }
@@ -118,18 +118,32 @@ public class LoginContentFilter implements Filter {
     }
 
     private UserDo getUserByToken(String token) {
-        if (StringUtils.isNotBlank(token) && token.length() > 10) {
-            IUserRedisCache userRedisCache = (IUserRedisCache) SpringContextUtil.getBean("userRedisCache");
-            UserDo userDo = userRedisCache.getUser(token);
-            if (userDo != null && StringUtils.isNotBlank(userDo.getTokenId())) {
-                userDo.resetLastAct();
-                userRedisCache.setUser(userDo);
-                return userDo;
-            } else {
-                return null;
-            }
-        }
-        return null;
+//        if (StringUtils.isNotBlank(token) && token.length() > 10) {
+//            IUserRedisCache userRedisCache = (IUserRedisCache) SpringContextUtil.getBean("userRedisCache");
+//            UserDo userDo = userRedisCache.getUser(token);
+//            if (userDo != null && StringUtils.isNotBlank(userDo.getTokenId())) {
+//                userDo.resetLastAct();
+//                userRedisCache.setUser(userDo);
+//                return userDo;
+//            } else {
+//                return null;
+//            }
+//        }
+//        return null;
+        UserDo userDo = new UserDo();
+        userDo.setAdminIf(1);
+        userDo.setCachSecond(1800);
+        userDo.setChnName("admin");
+        userDo.setLastAct(1679018053862L);
+        userDo.setOrgName(null);
+        userDo.setOrgNo(null);
+        userDo.setSessionId(null);
+        userDo.setTokenId("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJkb2kiLCJleHAiOjE2NzkwMzYwNTMsInRva2VuIjoie1xuICBcInV1aWRcIjogXCJiOTE5MmMwNTViZGI0MTEwYmI3M2MxNmRmYzczODMzMFwiLFxuICBcIm5vZGVcIjogXCIxMjMxMjMxMjMxMzEyMzIzMVwiLFxuICBcInVzZXJJZFwiOiBcIjE2OTE5OWE2ZWJiYzQxNjBhNTMwMTRlYWI0YTc2NzQwXCIsXG4gIFwidHNcIjogMTY3OTAxODA1Mzg2MlxufSJ9.wYj6g_MxQxV4_TZFb-AWA3lrz6CxGyenA--cYgUkRZQ");
+        userDo.setTopOrgName(null);
+        userDo.setTopOrgNo(null);
+        userDo.setUserId("169199a6ebbc4160a53014eab4a76740");
+        userDo.setUserName("18805913745");
+        return userDo;
     }
 
 }

@@ -137,9 +137,6 @@ public class OlkModelController extends BaseController {
     private OlkModelRunService analysisRunServicr;
 
     @Autowired
-    private HetuJdbcOperate hetuJdbcOperate;
-
-    @Autowired
     private OlkModelFolderService folderService;
     @Autowired
     private DataPartyService dataPartyService;
@@ -854,7 +851,6 @@ public class OlkModelController extends BaseController {
                             dMap.put( "id", moDo.getId() );
                             dMap.put( "type", "db" );
                             dMap.put( "modelId", id );
-                            dMap.put( "dcId",  dat.getDcId() );
                             dMap.put( "stype", dat.getStype() );
                             dMap.put( "objectId", moDo.getRealObjId() );
                             //dMap.put( "privFlag", dat.getPrivFlag() );
@@ -887,7 +883,6 @@ public class OlkModelController extends BaseController {
                             dMap.put( "id", moDo.getId() );
                             dMap.put( "type", "ds" );
                             dMap.put( "modelId", id );
-                            dMap.put( "dcId",  dat.getDcId() );
                             dMap.put( "stype", dat.getStype() );
                             dMap.put( "objectId", moDo.getRealObjId() );
                             //dMap.put( "privFlag", dat.getPrivFlag() );
@@ -1325,7 +1320,7 @@ public class OlkModelController extends BaseController {
             String sql = SqlTextUtil.limitSelet( modelVo.getRunSql(), modelVo.getPageSize() );
             logger.info( sql );
             if( StringUtils.isBlank( info.getDcId() )) { //跨节点运行
-                try ( HetuJdbcOperate dbop = this.hetuJdbcOperate ) {
+                try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate() ) {
                     list = dbop.selectData( sql, LinkedHashMap.class );
                 }
             }
@@ -1335,7 +1330,7 @@ public class OlkModelController extends BaseController {
                     return  resMap.setErr( "节点未启用" ).getResultMap();
                 }
                 //HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-                try(HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo)){
+                try(HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate()){
                     list = dbop.selectData( sql, LinkedHashMap.class );
                 }
             }
@@ -1495,7 +1490,7 @@ public class OlkModelController extends BaseController {
         info.setViewName(String.format("%s.tmp_%s", olkVdmCatalogViewName, info.getId()));
         List<TBydbFieldDo> fieldList = null;
         if ( StringUtils.isBlank( info.getDcId() ) ) { //跨节点运行
-            try ( HetuJdbcOperate dbop = this.hetuJdbcOperate ) {
+            try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate() ) {
                 String viewSql = String.format( "CREATE OR REPLACE VIEW %s AS %s", info.getViewName(), info.getRunSql() );
                 dbop.execute( viewSql );
                 fieldList = loadViewColumns(dbop, info.getViewName());
@@ -1507,7 +1502,7 @@ public class OlkModelController extends BaseController {
                 throw new MessageException( "节点未启用" );
             }
             //HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-            try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate(dcDo) ) {
+            try ( HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate() ) {
                 String viewSql = String.format( "CREATE OR REPLACE VIEW %s AS %s", info.getViewName(), info.getRunSql() );
                 dbop.execute( viewSql );
                 fieldList = loadViewColumns(dbop, info.getViewName());

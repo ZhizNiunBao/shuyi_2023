@@ -19,10 +19,6 @@
             and id = #{id}
         </if>
 
-        <if test="dcId != null ">
-            and dc_id = #{dcId}
-        </if>
-
         <if test="userId != null ">
             and user_id= #{userId}
         </if>
