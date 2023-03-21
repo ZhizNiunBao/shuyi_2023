@@ -20,5 +20,6 @@ public interface ErrorCodeConstants {
     // ========== 组件异常 ==========
     ErrorCode HETU_CONNECTION_ERROR = new ErrorCode("601", "Hetu 连接异常");
     ErrorCode HETU_EXECUTE_ERROR = new ErrorCode("602", "Hetu 语句执行异常");
+    ErrorCode HETU_HTTP_ERROR = new ErrorCode("603", "Hetu http 服务异常");
 
 }

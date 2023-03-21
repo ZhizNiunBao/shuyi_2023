@@ -18,12 +18,7 @@ public class TOlkCatalogTypeDo extends SidEntityDo {
     @ApiModelProperty(value = "上级id，最大长度(32)", hidden = true, example = "")
     @Column(name = "pid")
     private String pid;
-    /**
-     * 节点id
-     */
-    @ApiModelProperty(value = "节点id，最大长度(32)", hidden = true, example = "")
-    @Column(name = "dc_id")
-    private String dcId;
+
     /**
      * 归属用户
      */

@@ -19,8 +19,7 @@ import java.util.stream.Collectors;
 public class MyBeanUtils
         extends PropertyUtilsBean {
 
-    private static void convert( Object dest, Object orig ) throws
-            IllegalAccessException, InvocationTargetException {
+    private static void convert( Object dest, Object orig ) {
 
         // Validate existence of the specified beans
         if ( dest == null ) {
@@ -102,7 +101,7 @@ public class MyBeanUtils
      * @param tobean
      * @throws NoSuchMethodException copy
      */
-    public static void copyBeanNotNull2Bean( Object databean, Object tobean ) throws Exception {
+    public static void copyBeanNotNull2Bean( Object databean, Object tobean ) {
         PropertyDescriptor origDescriptors[] = PropertyUtils.getPropertyDescriptors( databean );
         PropertyDescriptor prop2[] = PropertyUtils.getPropertyDescriptors( tobean );
         HashMap<String, String> nameMap = new HashMap<>();
@@ -166,7 +165,7 @@ public class MyBeanUtils
      * @throws IllegalAccessException
      * @throws InvocationTargetException
      */
-    public static void copyBean2Bean( Object dest, Object orig ) throws Exception {
+    public static void copyBean2Bean( Object dest, Object orig ) {
         convert( dest, orig );
     }
 

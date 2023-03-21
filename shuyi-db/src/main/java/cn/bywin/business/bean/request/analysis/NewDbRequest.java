@@ -11,19 +11,19 @@ import lombok.Data;
 @ApiModel(value = "NewDbRequest", description = "新增数据目录请求体")
 public class NewDbRequest {
 
-    @ApiModelProperty("目录名称")
+    @ApiModelProperty(value = "目录名称", required = true)
     private String catalogName;
 
     @ApiModelProperty("父目录Id, 如果没有则为空")
     private String catalogType;
 
-    @ApiModelProperty("目录中文名称")
+    @ApiModelProperty(value = "目录中文名称", required = true)
     private String chName;
 
-    @ApiModelProperty("数据库类型")
+    @ApiModelProperty(value = "数据库类型", required = true)
     private String connectorName;
 
-    @ApiModelProperty("连接参数")
+    @ApiModelProperty(value = "连接参数", required = true)
     private String propSet;
 
 }

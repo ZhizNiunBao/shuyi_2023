@@ -16,7 +16,7 @@ public interface OlkCatalogTypeMapper extends Mapper<TOlkCatalogTypeDo>, MySqlMa
     List<TOlkCatalogTypeDo> findBeanList(TOlkCatalogTypeDo bean);
     long findBeanCnt(TOlkCatalogTypeDo bean);
 
-    @Select(value = " select count(*) cnt from  t_olk_catalog_type where ( pid is null and '${pid}' = '#NULL#'  or pid = '${pid}' ) and ( dc_id is null and '${dcId}' = '#NULL#'  or dc_id = '${dcId}' ) and type_name= #{typeName} " +
+    @Select(value = " select count(*) cnt from  t_olk_catalog_type where ( pid is null and '${pid}' = ''  or pid = '${pid}' ) and type_name= #{typeName} " +
             "and id != #{id} " )
     long findSameNameCount(TOlkCatalogTypeDo bean);
 

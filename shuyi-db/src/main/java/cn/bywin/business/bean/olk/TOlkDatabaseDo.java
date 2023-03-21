@@ -68,12 +68,7 @@ public class TOlkDatabaseDo extends SidEntityDo {
     @ApiModelProperty(required = true, value = "节点目录名称，最大长度(50)", hidden = false, example = "erju")
     @Column(name = "dc_db_name")
     private String dcDbName;
-    /**
-     * 节点编码
-     */
-    @ApiModelProperty(required = true, value = "parentId", hidden = true, example = "")
-    @Column(name = "parent_id")
-    private String parentId;
+
     /**
      * 中文名称
      */

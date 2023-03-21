@@ -1,9 +1,10 @@
 package cn.bywin.business.controller.olk;
 
-
 import cn.bywin.business.bean.olk.TOlkCatalogTypeDo;
 import cn.bywin.business.bean.olk.TOlkDatabaseDo;
 import cn.bywin.business.bean.olk.TOlkDcServerDo;
+import cn.bywin.business.bean.request.analysis.AddCatalogRequest;
+import cn.bywin.business.bean.request.analysis.UpdateCatalogRequest;
 import cn.bywin.business.common.base.BaseController;
 import cn.bywin.business.common.base.ResponeMap;
 import cn.bywin.business.common.base.UserDo;
@@ -15,6 +16,7 @@ import cn.bywin.business.common.util.PageBeanWrapper;
 import cn.bywin.business.service.olk.OlkCatalogTypeService;
 import cn.bywin.business.service.olk.OlkDatabaseService;
 import cn.bywin.business.service.olk.OlkDcServerService;
+import com.google.common.base.Preconditions;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -37,7 +39,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
 
-
 @CrossOrigin(value = {"*"},
         methods = {RequestMethod.GET, RequestMethod.POST,RequestMethod.DELETE},
         maxAge = 3600)
@@ -56,287 +57,56 @@ public class OlkCatalogTypeController extends BaseController {
     @Autowired
     private OlkDcServerService dcService;
 
-
     @ApiOperation(value = "新增olk目录分组", notes = "新增olk目录分组")
-    @ApiImplicitParams({
-            //@ApiImplicitParam(name = "info", value = "olk目录分组", dataType = "TOlkCatalogTypeDo", required = true, paramType = "body")
-    })
     @RequestMapping(value = "/add", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object add(@RequestBody TOlkCatalogTypeDo info, HttpServletRequest request) {
+    public Object add(@RequestBody AddCatalogRequest request) {
         ResponeMap resMap = this.genResponeMap();
-        try {
-            UserDo user = LoginUtil.getUser(request);
-            if (user == null || StringUtils.isBlank(user.getUserId())) {
-                return resMap.setErr("请先登录").getResultMap();
-            }
 
-            if (StringUtils.isBlank(info.getTypeName())) {
-                return resMap.setErr("名称不能为空").getResultMap();
-            }
-
-            if( StringUtils.isBlank( info.getPid() ) ){
-                info.setPid(null);
-            }
-//            info.setPid(null);
-            info.setId( ComUtil.genId());
-            LoginUtil.setBeanInsertUserInfo( info,user );
-            info.setUserAccount( user.getUserName() );
-            info.setUserAccountName( user.getChnName() );
-            info.setUserDeptNa( user.getOrgNo() );
-            info.setUserDeptNa( user.getOrgName() );
-
-            String preCode ="";
-            List<TOlkCatalogTypeDo> pList = null;
-            if( StringUtils.isBlank( info.getPid() ) ){
-                info.setPid(null);
-//                TOlkCatalogTypeDo temp = new TOlkCatalogTypeDo();
-//                temp.setDcId( user.getUserName() );
-//                temp.setPid( "#NULL#" );
-//                if( StringUtils.isBlank( info.getRelCode() )) {
-//                    pList = typeService.findBeanList(temp);
-//                    preCode = "A";
-//                }
-            }
-            else{
-                final TOlkCatalogTypeDo parent = typeService.findById(info.getPid());
-
-                if( parent == null) {
-                    return resMap.setErr("上级分组不存在").getResultMap();
-                }
-//                if( StringUtils.isBlank(parent.getRelCode()) ){
-//                    return resMap.setErr("请先重新保存上级分组").getResultMap();
-//                }
-                if( !info.getUserAccount().equals( parent.getUserAccount() ) ){
-                    return  resMap.setErr("你无权在此分组下添加分组").getResultMap();
-                }
-                info.setDcId( parent.getDcId() );
-//                if( StringUtils.isBlank( info.getRelCode() )) {
-//                    info.setPid(parent.getId());
-//                    TOlkCatalogTypeDo temp = new TOlkCatalogTypeDo();
-//                    temp.setPid(parent.getId());
-//                    pList = typeService.findBeanList(temp);
-//                    preCode = parent.getRelCode();
-//                }
-            }
-            //if( StringUtils.isBlank( info.getRelCode() )) {
-//                String strCode = "";
-//                if (pList.size() > 0) {
-//                    int code = 1;
-//                    while (true) {
-//                        strCode = String.format("%s%03d", preCode, code);
-//                        boolean bfound = false;
-//                        for (TOlkCatalogTypeDo sysDepartmentDo : pList) {
-//                            if (strCode.equals(sysDepartmentDo.getRelCode())) {
-//                                bfound = true;
-//                                break;
-//                            }
-//                        }
-//                        if (!bfound) {
-//                            break;
-//                        }
-//                        code ++;
-//                    }
-//
-//                } else {
-//                    strCode = preCode + "001";
-//                }
-//
-//                if (StringUtils.isBlank(info.getRelCode())) {
-//                    info.setRelCode(strCode);
-//                }
-            //}
-
-            if( StringUtils.isNotBlank( info.getDcId() ) ){
-                TOlkDcServerDo dcDo = dcService.findById( info.getDcId() );
-                if( dcDo == null ){
-                    return resMap.setErr("节点不存在").getResultMap();
-                }
-            }
-            else{
-                return resMap.setErr("节点不能为空").getResultMap();
-            }
-
-            TOlkCatalogTypeDo same = new TOlkCatalogTypeDo();
-            MyBeanUtils.copyBeanNotNull2Bean( info, same );
-            if( StringUtils.isBlank( same.getPid() ) )
-                same.setPid("#NULL#");
-            if( StringUtils.isBlank( same.getDcId() ) )
-                same.setDcId("#NULL#");
-            final long sameNameCount = typeService.findSameNameCount( same );
-            if( sameNameCount >0 ){
-                return resMap.setErr("名称已使用").getResultMap();
-            }
-
-            typeService.insertBean(info);
-//            new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).addLog(user, info, "新增-olk目录分组");
-            resMap.setSingleOk(info, "保存成功");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            resMap.setErr("保存失败");
-            logger.error("保存异常:", ex);
+        Preconditions.checkArgument(StringUtils.isNotBlank(request.getTypeName()), "名称不能为空");
+        if (StringUtils.isNotBlank(request.getPid())) {
+            TOlkCatalogTypeDo parent = typeService.findById(request.getPid());
+            Preconditions.checkArgument(parent != null, "上级分组不存在");
+        } else {
+            request.setPid(null);
         }
+
+        TOlkCatalogTypeDo catalogInfo = new TOlkCatalogTypeDo();
+        catalogInfo.setId(ComUtil.genId());
+        MyBeanUtils.copyBeanNotNull2Bean(request, catalogInfo);
+        long sameNameCount = typeService.findSameNameCount(catalogInfo);
+        Preconditions.checkArgument(sameNameCount <= 0, "名称已使用");
+
+        UserDo user = LoginUtil.getUser();
+        LoginUtil.setBeanInsertUserInfo(catalogInfo, user);
+        catalogInfo.setUserAccount(user.getUserName());
+        catalogInfo.setUserAccountName(user.getChnName());
+        catalogInfo.setUserDeptNa(user.getOrgNo());
+        catalogInfo.setUserDeptNa(user.getOrgName());
+
+        typeService.insertBean(catalogInfo);
+        resMap.setSingleOk(catalogInfo, "保存成功");
         return resMap.getResultMap();
     }
 
     @ApiOperation(value = "修改olk目录分组", notes = "修改olk目录分组")
-    @ApiImplicitParams({
-            //@ApiImplicitParam(name = "id", value = "id", dataType = "String", required = true, paramType = "form"),
-            //@ApiImplicitParam(name = "typeName", value = "名称", dataType = "String", required = true, paramType = "query")
-    })
     @RequestMapping(value = "/update", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object update(@RequestBody TOlkCatalogTypeDo bean,HttpServletRequest request) {
+    public Object update(@RequestBody UpdateCatalogRequest request) {
         ResponeMap resMap = this.genResponeMap();
-        try {
-            UserDo user = LoginUtil.getUser(request);
-            if (user == null || StringUtils.isBlank(user.getUserId())) {
-                return resMap.setErr("请先登录").getResultMap();
-            }
 
-            //HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest( request );
-            //logger.debug( "{}",hru.getAllParaData() );
-            if( bean == null || StringUtils.isBlank( bean.getId() ) ){
-                return resMap.setErr("id不能为空").getResultMap();
-            }
-            //TOlkCatalogTypeDo info = typeService.findById(hru.getNvlPara("id"));
-            TOlkCatalogTypeDo info = typeService.findById(bean.getId());
-            if (info == null)
-            {
-                return resMap.setErr("分组不存在").getResultMap();
-            }
+        Preconditions.checkArgument(StringUtils.isNotBlank(request.getId()), "id不能为空");
+        Preconditions.checkArgument(StringUtils.isNotBlank(request.getTypeName()), "名称不能为空");
 
-            TOlkCatalogTypeDo old = new TOlkCatalogTypeDo();
-            MyBeanUtils.copyBeanNotNull2Bean( info, old );
+        TOlkCatalogTypeDo info = typeService.findById(request.getId());
+        Preconditions.checkArgument(info != null, "分组不存在");
 
-            MyBeanUtils.copyBeanNotNull2Bean( bean, info );
+        MyBeanUtils.copyBeanNotNull2Bean(request, info);
+        final long sameNameCount = typeService.findSameNameCount(info);
+        Preconditions.checkArgument(sameNameCount <= 0, "名称已使用");
 
-           // new PageBeanWrapper( info,hru,"");
-
-            if (StringUtils.isBlank(info.getTypeName())) {
-                return resMap.setErr("名称不能为空").getResultMap();
-            }
-
-            info.setRelCode( old.getRelCode() );
-            info.setPid( old.getPid() );
-//            if( StringUtils.isNotBlank( info.getPid() ) ){ //改成只有一级
-//                info.setPid(null);
-//                info.setRelCode( null );
-//            }
-//            else{
-//                info.setPid(null);
-//            }
-
-            info.setUserAccount( user.getUserName() );
-            info.setUserAccountName( user.getChnName() );
-            info.setUserDeptNa( user.getOrgNo() );
-            info.setUserDeptNa( user.getOrgName() );
-
-            if( StringUtils.isNotBlank( old.getUserAccount() ) &&
-                !old.getUserAccount().equals(user.getUserName()) ){
-                    return resMap.setErr("你不能操作此类型").getResultMap();
-            }
-
-            TOlkCatalogTypeDo same = new TOlkCatalogTypeDo();
-            MyBeanUtils.copyBeanNotNull2Bean( info, same );
-            if( StringUtils.isBlank( same.getPid() ) )
-                same.setPid("#NULL#");
-            if( StringUtils.isBlank( same.getDcId() ) )
-                same.setDcId("#NULL#");
-            final long sameNameCount = typeService.findSameNameCount( same );
-            if( sameNameCount >0 ){
-                return resMap.setErr("名称已使用").getResultMap();
-            }
-
-            String preCode ="";
-            List<TOlkCatalogTypeDo> pList = null;
-            if( StringUtils.isBlank( info.getPid() ) ){
-                info.setPid(null);
-//                TOlkCatalogTypeDo temp = new TOlkCatalogTypeDo();
-//                //temp.setAdminId( userAdmin.getId() );
-//                temp.setDcId( user.getUserName() );
-//                temp.setPid( "#NULL#" );
-//                if( StringUtils.isBlank( info.getRelCode() )) {
-//                    pList = typeService.findBeanList(temp);
-//                    preCode = "A";
-//                }
-            }
-            else{
-                final TOlkCatalogTypeDo parent = typeService.findById(info.getPid());
-
-                if( parent == null) {
-                    return resMap.setErr("上级组织机构不存在").getResultMap();
-                }
-//                if( StringUtils.isBlank(parent.getRelCode()) ){
-//                    return resMap.setErr("请先重新保存上级组织机构").getResultMap();
-//                }
-                if( !user.getUserName().equals( parent.getUserAccount() ) ){
-                    return  resMap.setErr("你无权在此分组下操作分组").getResultMap();
-                }
-                info.setDcId( parent.getDcId() );
-
-//                if( StringUtils.isBlank( info.getRelCode() )) {
-//                    info.setPid(parent.getId());
-//                    TOlkCatalogTypeDo temp = new TOlkCatalogTypeDo();
-//                    temp.setPid(parent.getId());
-//                    pList = typeService.findBeanList(temp);
-//                    preCode = parent.getRelCode();
-//                }
-
-            }
-//            if( StringUtils.isBlank( info.getRelCode() )) {
-//                String strCode = "";
-//                if (pList.size() > 0) {
-//                    int code = 1;
-//                    while (true) {
-//                        strCode = String.format("%s%03d", preCode, code);
-//                        boolean bfound = false;
-//                        for (TOlkCatalogTypeDo sysDepartmentDo : pList) {
-//                            if (strCode.equals(sysDepartmentDo.getRelCode())) {
-//                                bfound = true;
-//                                break;
-//                            }
-//                        }
-//                        if (!bfound) {
-//                            break;
-//                        }
-//                        code ++;
-//                    }
-//
-//                } else {
-//                    strCode = preCode + "001";
-//                }
-//
-//                if (StringUtils.isBlank(info.getRelCode())) {
-//                    info.setRelCode(strCode);
-//                }
-//            }
-            if( StringUtils.isNotBlank( info.getDcId() ) ){
-                TOlkDcServerDo dcDo = dcService.findById( info.getDcId() );
-                if( dcDo == null ){
-                    return resMap.setErr("节点不存在").getResultMap();
-                }
-            }
-            else{
-                return resMap.setErr("节点不为空").getResultMap();
-            }
-
-            typeService.updateBean(info);
-
-//            new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).updateLog(user, old, info, "修改-olk目录分组");
-
-            resMap.setSingleOk(info, "保存成功");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            resMap.setErr("保存失败");
-            logger.error("保存异常:", ex);
-        }
+        typeService.updateBean(info);
+        resMap.setSingleOk(info, "保存成功");
         return resMap.getResultMap();
     }
-
-
 
     @ApiOperation(value = "olk目录分组内容", notes = "olk目录分组内容")
     @ApiImplicitParams({
@@ -354,7 +124,6 @@ public class OlkCatalogTypeController extends BaseController {
             resMap.setSingleOk(modelVo, "成功");
 
         } catch (Exception ex) {
-            ex.printStackTrace();
             resMap.setErr("查询失败");
             logger.error("查询异常:", ex);
         }
@@ -367,25 +136,16 @@ public class OlkCatalogTypeController extends BaseController {
     })
     @RequestMapping(value = "/delete", method = {RequestMethod.DELETE})
     @ResponseBody
-    public Object delete(String id,HttpServletRequest request) {
+    public Object delete(String id) {
         ResponeMap resMap = this.genResponeMap();
         try {
             if (StringUtils.isBlank(id)) {
                 return resMap.setErr("id不能为空").getResultMap();
             }
-            UserDo user = LoginUtil.getUser(request);
             if (!id.matches("^[a-zA-Z0-9\\-_,]*$")) {
                 return resMap.setErr("id有非法字符").getResultMap();
             }
             List<String> split = Arrays.asList(id.split(","));
-
-//            Example exp = new Example(TOlkAdminUserDo.class);
-//            Example.Criteria criteria = exp.createCriteria();
-//            criteria.andIn("adminId", split);
-//            int cnt = objectService.findCountByExample(exp);
-//            if( cnt >0 ){
-//                return resMap.setErr("目录分组有下级对象不能删除").getResultMap();
-//            }
 
             Example exp = new Example(TOlkDatabaseDo.class);
             Example.Criteria criteria = exp.createCriteria();
@@ -413,16 +173,6 @@ public class OlkCatalogTypeController extends BaseController {
                 return resMap.setErr("有目录分组不存在").getResultMap();
             }
             typeService.deleteByIds(collect);
-
-//            String times = String.valueOf(System.currentTimeMillis());
-//            for (TOlkCatalogTypeDo info : list) {
-//                try {
-//                    new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).delLog(user, info, "删除-olk目录分组" + times);
-//                } catch (Exception e1) {
-//                    resMap.setErr("删除失败");
-//                    logger.error("删除异常:", e1);
-//                }
-//            }
             resMap.setOk("删除成功");
 
         } catch (Exception ex) {
@@ -451,24 +201,6 @@ public class OlkCatalogTypeController extends BaseController {
             new PageBeanWrapper( modelVo,hru);
             modelVo.setQryCond(ComUtil.chgLikeStr(modelVo.getQryCond()));
             modelVo.setTypeName(ComUtil.chgLikeStr(modelVo.getTypeName()));
-
-            if( StringUtils.isBlank( modelVo.getDcId() )) {
-                UserDo user = LoginUtil.getUser(request);
-//                TOlkDcServerDo dcTmp = new TOlkDcServerDo();
-//                dcTmp.setManageAccount(user.getUserName());
-//                List<TOlkDcServerDo> dcList = dcserverService.find(dcTmp);
-//                if (dcList.size() == 0) {
-//                    return resMap.setErr("用户未关联节点").getResultMap();
-//                } else if (dcList.size() > 1) {
-//                    String dcName = dcList.stream().map(x -> x.getDcName() + "(" + x.getDcCode() + ")").collect(Collectors.joining(","));
-//                    logger.error("用户{},关联多节点:{}", user.getUserName(), dcName);
-//                    resMap.setDebugeInfo("关联多节点:" + dcName);
-//                    return resMap.setErr("用户关联多节点").getResultMap();
-//                }
-//                TOlkDcServerDo dcDo = dcList.get(0);
-//                modelVo.setDcId(dcDo.getId());
-                modelVo.setDcId( user.getUserName() );
-            }
 
             logger.debug( "id:{},info:{}",modelVo.getId(),modelVo);
 
@@ -550,7 +282,7 @@ public class OlkCatalogTypeController extends BaseController {
     private List<Object> makeTreeNode(String dcId, List<TOlkCatalogTypeDo> list,String pid){
         List<Object> retList = new ArrayList<>();
         for (TOlkCatalogTypeDo temp : list) {
-            if( ComUtil.trsEmpty( pid).equals( ComUtil.trsEmpty( temp.getPid() ) ) && dcId.equals( temp.getDcId() )){
+            if( ComUtil.trsEmpty( pid).equals( ComUtil.trsEmpty( temp.getPid() ) )){
                 HashMap<String,Object> node = new HashMap<String,Object>();
                 node.put("type","folder");
                 node.put("Id", temp.getId());

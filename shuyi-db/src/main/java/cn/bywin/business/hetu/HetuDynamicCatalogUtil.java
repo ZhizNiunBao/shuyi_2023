@@ -1,5 +1,8 @@
 package cn.bywin.business.hetu;
 
+import static cn.bywin.business.common.enums.ErrorCodeConstants.HETU_HTTP_ERROR;
+
+import cn.bywin.business.common.except.ServerException;
 import com.google.gson.Gson;
 import io.prestosql.jdbc.$internal.airlift.json.JsonCodec;
 import io.prestosql.jdbc.$internal.okhttp3.MediaType;
@@ -37,7 +40,7 @@ public class HetuDynamicCatalogUtil extends HetuBaseUtil {
      * @param catalogName 目录名称
      * @return 目录是否存在
      */
-    public static boolean checkCatalogExist(HetuInfo hetuInfo, String catalogName) throws IOException {
+    public static boolean checkCatalogExist(HetuInfo hetuInfo, String catalogName) {
         OkHttpClient httpClient = createHttpClient(hetuInfo);
         Request request = new Request.Builder()
                 .url(hetuInfo.getConnectionUrl() + "/v1/catalog")
@@ -50,6 +53,8 @@ public class HetuDynamicCatalogUtil extends HetuBaseUtil {
                 return catalogs.contains(catalogName);
             }
             return false;
+        } catch (IOException e) {
+            throw new ServerException(HETU_HTTP_ERROR.getCode(), HETU_HTTP_ERROR.getMessage());
         }
     }
 
@@ -59,7 +64,7 @@ public class HetuDynamicCatalogUtil extends HetuBaseUtil {
      * @param catalogName 目录名称
      * @return 是否删除成功
      */
-    public static DynamicCatalogResult deleteCatalog(HetuInfo hetuInfo, String catalogName) throws IOException {
+    public static DynamicCatalogResult deleteCatalog(HetuInfo hetuInfo, String catalogName) {
         boolean exist = checkCatalogExist(hetuInfo, catalogName);
         if (!exist) {
             return new DynamicCatalogResult(SUCCESS, "");
@@ -80,6 +85,8 @@ public class HetuDynamicCatalogUtil extends HetuBaseUtil {
                 }
                 return new DynamicCatalogResult(code, response.message());
             }
+        } catch (IOException e) {
+            throw new ServerException(HETU_HTTP_ERROR.getCode(), HETU_HTTP_ERROR.getMessage());
         }
         return new DynamicCatalogResult(SYSTEM_ERROR, DEFAULT_ERROR_MESSAGE);
     }

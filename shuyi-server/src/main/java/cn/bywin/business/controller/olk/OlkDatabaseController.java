@@ -2,8 +2,6 @@ package cn.bywin.business.controller.olk;
 
 import static cn.bywin.business.common.enums.TreeRootNodeEnum.DATASOURCE;
 
-import cn.bywin.business.bean.federal.FDataApproveDo;
-import cn.bywin.business.bean.federal.FNodePartyDo;
 import cn.bywin.business.bean.olk.TOlkCatalogTypeDo;
 import cn.bywin.business.bean.olk.TOlkDatabaseDo;
 import cn.bywin.business.bean.olk.TOlkDcServerDo;
@@ -12,17 +10,15 @@ import cn.bywin.business.bean.olk.TOlkModelObjectDo;
 import cn.bywin.business.bean.olk.TOlkObjectDo;
 import cn.bywin.business.bean.olk.TOlkSchemaDo;
 import cn.bywin.business.bean.request.analysis.NewDbRequest;
-import cn.bywin.business.bean.system.SysUserDo;
-import cn.bywin.business.bean.view.federal.FDataApproveVo;
-import cn.bywin.business.bean.view.olk.OlkObjectWithFieldsVo;
-import cn.bywin.business.bean.view.olk.UserGrantDbSchema;
+import cn.bywin.business.bean.request.analysis.QueryDataRequest;
+import cn.bywin.business.bean.request.analysis.RefreshSchemaRequest;
+import cn.bywin.business.bean.request.analysis.UpdateDatabaseRequest;
 import cn.bywin.business.common.base.BaseController;
 import cn.bywin.business.common.base.ResponeMap;
 import cn.bywin.business.common.base.UserDo;
 import cn.bywin.business.common.login.LoginUtil;
 import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.Constants;
-import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.JsonUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
@@ -33,19 +29,13 @@ import cn.bywin.business.hetu.HetuDynamicCatalogUtil;
 import cn.bywin.business.hetu.HetuInfo;
 import cn.bywin.business.hetu.HetuJdbcOperate;
 import cn.bywin.business.hetu.HetuJdbcOperateComponent;
-import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.olk.OlkCatalogTypeService;
 import cn.bywin.business.service.olk.OlkDatabaseService;
-import cn.bywin.business.service.olk.OlkDcServerService;
 import cn.bywin.business.service.olk.OlkFieldService;
 import cn.bywin.business.service.olk.OlkModelObjectService;
 import cn.bywin.business.service.olk.OlkObjectService;
 import cn.bywin.business.service.olk.OlkSchemaService;
-import cn.bywin.business.trumodel.ApiOlkDbService;
-import cn.bywin.business.trumodel.ApiTruModelService;
 import cn.bywin.cache.SysParamSetOp;
-import cn.bywin.common.resp.ListResp;
-import cn.bywin.common.resp.ObjectResp;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -107,20 +97,7 @@ public class OlkDatabaseController extends BaseController {
     private OlkCatalogTypeService catalogTypeService;
 
     @Autowired
-    private NodePartyService nodePartyService;
-
-    @Autowired
-    private ApiTruModelService apiTruModelService;
-
-    @Autowired
-    private ApiOlkDbService apiOlkDbService;
-
-    @Autowired
     private OlkModelObjectService modelObjService;
-
-    @Autowired
-    private OlkDcServerService dcService;
-
 
     String connectChar = "^";
 
@@ -131,6 +108,9 @@ public class OlkDatabaseController extends BaseController {
     private static final String CATALOG_NAME_REGEX = "^[a-zA-Z]{1}[a-zA-Z0-9_]{2,20}$";
     private static final Pattern CATALOG_NAME_PATTERN = Pattern
         .compile(CATALOG_NAME_REGEX, Pattern.CASE_INSENSITIVE);
+
+    private static final String DB_CHNAME_REGEX = "^[a-zA-Z0-9\\\u4e00-\\\u9fa5]{2,30}$";
+    private static final Pattern DB_CHNAME_PATTERN = Pattern.compile(DB_CHNAME_REGEX, Pattern.CASE_INSENSITIVE);
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -328,7 +308,6 @@ public class OlkDatabaseController extends BaseController {
             if (delList.size() > 0) {
                 List<String> deIdList = delList.stream().map(x -> x.getId())
                     .collect(Collectors.toList());
-                apiOlkDbService.delOlkSchema(deIdList, "0", user.getTokenId());
                 schemaService.deleteWhithRel(delList);
             }
             int norder = 10;
@@ -444,7 +423,6 @@ public class OlkDatabaseController extends BaseController {
                 if (delList.size() > 0) {
                     List<String> deIdList = delList.stream().map(x -> x.getId())
                         .collect(Collectors.toList());
-                    apiOlkDbService.delOlkSchema(deIdList, "0", user.getTokenId());
                     schemaService.deleteWhithRel(delList);
                 }
                 int norder = 10;
@@ -544,9 +522,6 @@ public class OlkDatabaseController extends BaseController {
 
                 }
                 if (delObjectList.size() > 0) {
-                    List<String> deIdList = delObjectList.stream().map(x -> x.getId())
-                        .collect(Collectors.toList());
-                    apiOlkDbService.delOlkTable(delObjectList, user.getTokenId());
                     objectService.deleteWhithOthers(delObjectList);
                 }
             }
@@ -634,81 +609,20 @@ public class OlkDatabaseController extends BaseController {
     }
 
     @ApiOperation(value = "修改olk数据目录", notes = "修改olk数据目录")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", value = "id", dataType = "String", example = "c2e9e8a5ce0e4a1b8be389dd1a7d5871", required = true, paramType = "query"),
-        @ApiImplicitParam(name = "dbChnName", value = "中文名称", dataType = "String", example = "mysql实例", required = false, paramType = "query"),
-        @ApiImplicitParam(name = "catalogType", value = "目录分组ID", dataType = "String", example = "", required = false, paramType = "query"),
-        @ApiImplicitParam(name = "enable", value = "是否启用 0未启用 1部分启用", dataType = "Integer", example = "1", required = false, paramType = "query")
-    })
     @RequestMapping(value = "/update", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object update(HttpServletRequest request) {
+    public Object update(@RequestBody UpdateDatabaseRequest request) {
         ResponeMap resMap = this.genResponeMap();
-        try {
-            UserDo ud = LoginUtil.getUser(request);
-            if (ud == null || StringUtils.isBlank(ud.getUserId())) {
-                return resMap.setErr("请先登录").getResultMap();
-            }
 
-            //@RequestBody TOlkDatabaseDo modelVo,
-            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest(request);
-            logger.debug("{}", hru.getAllParaData());
-            TOlkDatabaseDo info = databaseService.findById(hru.getNvlPara("id"));
+        TOlkDatabaseDo info = databaseService.findById(request.getId());
+        Preconditions.checkArgument(info != null, "目录不存在");
+        Preconditions.checkArgument(StringUtils.isNotBlank(request.getDbChnName()), "中文名称不能为空,只能为2-30个字符,字符可为中文大小写字母数字");
 
-            if (info == null) {
-                return resMap.setErr("目录不存在").getResultMap();
-            }
+        Matcher matcher = DB_CHNAME_PATTERN.matcher(info.getDbChnName());
+        Preconditions.checkArgument(matcher.find(), "中文名称只能为2-30个字符,字符可为中文大小写字母数字");
+        info.setDbChnName(request.getDbChnName());
+        databaseService.updateBean(info);
+        resMap.setSingleOk(info, "保存成功");
 
-            TOlkDatabaseDo oldData = new TOlkDatabaseDo();
-            MyBeanUtils.copyBeanNotNull2Bean(info, oldData);
-
-            new PageBeanWrapper(info, hru, "");
-            info.setDbName(oldData.getDbName());
-            if (StringUtils.isBlank(info.getDbName())) {
-                return resMap.setErr("英文名称不能为空").getResultMap();
-            }
-            if (oldData.getEnable() != null) {
-                info.setEnable(oldData.getEnable());
-            } else {
-                if (info.getEnable() == null) {
-                    info.setEnable(1);
-                }
-            }
-
-            if (StringUtils.isBlank(info.getDbChnName())) {
-                return resMap.setErr("中文名称不能为空,只能为2-30个字符,字符可为中文大小写字母数字").getResultMap();
-            } else {
-                String reg = "^[a-zA-Z0-9\\\u4e00-\\\u9fa5]{2,30}$";
-                Pattern pat = Pattern.compile(reg, Pattern.CASE_INSENSITIVE);
-                Matcher matcher = pat.matcher(info.getDbChnName());
-                if (!matcher.find()) {
-                    return resMap.setErr("中文名称只能为2-30个字符,字符可为中文大小写字母数字").getResultMap();
-                }
-            }
-
-            if (StringUtils.isBlank(info.getDbType())) {
-                return resMap.setErr("连接类型不能为空").getResultMap();
-            }
-
-            final long sameNameCount = databaseService.findSameNameCount(info);
-            if (sameNameCount > 0) {
-                return resMap.setErr("名称已使用").getResultMap();
-            }
-            info.setSynFlag(0);
-
-            if (oldData.getEnable() == null || !oldData.getEnable().equals(info.getEnable())) {
-                List<TOlkDatabaseDo> updList = new ArrayList<>();
-                updList.add(info);
-                databaseService.updateBeanWithFlag(updList);
-            } else {
-                databaseService.updateBean(info);
-            }
-            resMap.setSingleOk(info, "保存成功");
-
-        } catch (Exception ex) {
-            resMap.setErr("保存失败");
-            logger.error("保存异常:", ex);
-        }
         return resMap.getResultMap();
     }
 
@@ -835,97 +749,55 @@ public class OlkDatabaseController extends BaseController {
     })
     @RequestMapping(value = "/delete", method = {RequestMethod.DELETE})
     @ResponseBody
-    public Object delete(String id, HttpServletRequest request) {
+    public Object delete(String id) {
         ResponeMap resMap = this.genResponeMap();
-        try {
-            if (StringUtils.isBlank(id)) {
-                return resMap.setErr("id不能为空").getResultMap();
-            }
-            UserDo user = LoginUtil.getUser(request);
+        Preconditions.checkArgument(StringUtils.isNotEmpty(id), "id不能为空");
+        UserDo user = LoginUtil.getUser();
 
-            List<String> idList = Arrays.asList(id.split("(,|\\s)+")).stream()
-                .filter(StringUtils::isNoneBlank).distinct().collect(Collectors.toList());
+        List<String> idList = Arrays.asList(id.split("(,|\\s)+")).stream()
+            .filter(StringUtils::isNoneBlank).distinct().collect(Collectors.toList());
+        Preconditions.checkArgument(idList.size() == 1, "只能删除1个目录");
 
-            if (idList.size() != 1) {
-                return resMap.setErr("只能删除1个目录").getResultMap();
-            }
+        TOlkDatabaseDo info = databaseService.findById(idList.get(0));
+        Preconditions.checkArgument(info != null, "数据目录不存在");
 
-            TOlkDatabaseDo info = databaseService.findById(idList.get(0));
-            if (info == null) {
-                return resMap.setErr("数据目录不存在").getResultMap();
-            }
+        Example exp = new Example(TOlkDatabaseDo.class);
+        Example.Criteria criteria = exp.createCriteria();
+        criteria.andCondition(
+            " real_obj_id in (select a.id from t_olk_object a, t_olk_database b where a.db_id =b.id  and b.id in( '"
+                + info.getId() + "') )");
+        int cnt = modelObjService.findCountByExample(exp);
+        Preconditions.checkArgument(cnt <= 0, "数据被使用，不能删除");
 
-            Example exp = new Example(TOlkDatabaseDo.class);
-            Example.Criteria criteria = exp.createCriteria();
-            criteria.andCondition(
-                " real_obj_id in (select a.id from t_olk_object a, t_olk_database b where a.db_id =b.id  and b.id in( '"
-                    + info.getId() + "') )");
-            criteria.andEqualTo("userId", info.getUserId());
-            int cnt = modelObjService.findCountByExample(exp);
-            if (cnt > 0) {
-                return resMap.setErr("数据被使用，不能删除").getResultMap();
+        if (Constants.dchetu.equals(info.getDbsourceId())) {
+            HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo();
+            if (HetuDynamicCatalogUtil.checkCatalogExist(hetuInfo, info.getDcDbName())) {
+                DynamicCatalogResult dynamicCatalogResult = HetuDynamicCatalogUtil
+                    .deleteCatalog(hetuInfo, info.getDcDbName());
+                Preconditions.checkArgument(dynamicCatalogResult.isSuccessful(), "删除服务端目录失败" + dynamicCatalogResult.getMessage());
             }
-
-            ObjectResp<String> retVal = apiOlkDbService
-                .delOlkDatabase(info.getId(), user.getTokenId());
-            if (retVal.isSuccess()) {
-                if (Constants.dchetu.equals(info.getDbsourceId())) {
-                    HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo();
-                    if (HetuDynamicCatalogUtil.checkCatalogExist(hetuInfo, info.getDcDbName())) {
-                        DynamicCatalogResult dynamicCatalogResult = HetuDynamicCatalogUtil
-                            .deleteCatalog(hetuInfo, info.getDcDbName());
-                        if (!dynamicCatalogResult.isSuccessful()) {
-                            return resMap.setErr("删除服务端目录失败" + dynamicCatalogResult.getMessage())
-                                .getResultMap();
-                        }
-                    }
-                }
-                databaseService.deleteWithOther(info);
-                resMap.setOk("删除成功");
-            } else {
-                return retVal;
-            }
-        } catch (Exception ex) {
-            resMap.setErr("删除失败");
-            logger.error("删除异常:", ex);
         }
+        databaseService.deleteWithOther(info);
+        resMap.setOk("删除成功");
         return resMap.getResultMap();
     }
 
     @ApiOperation(value = "数据目录分页", notes = "数据目录分页")
     @ApiImplicitParams({
         @ApiImplicitParam(name = "qryCond", value = "模糊条件", dataType = "String", required = false, paramType = "query"),
-        @ApiImplicitParam(name = "dbsourceId", value = "数据源类型", dataType = "String", required = false, paramType = "query"),
-        @ApiImplicitParam(name = "dcId", value = "节点id", dataType = "String", required = false, paramType = "query"),
-        @ApiImplicitParam(name = "catalogType", value = "目录分组ID", dataType = "String", example = "", required = false, paramType = "query"),
         @ApiImplicitParam(name = "catalogType", value = "目录分组ID", dataType = "String", example = "", required = false, paramType = "query"),
         @ApiImplicitParam(name = "currentPage", value = "页数", dataType = "Integer", required = false, paramType = "query"),
-        @ApiImplicitParam(name = "pageSize", value = "分页大小", dataType = "Integer", required = false, paramType = "query")
+        @ApiImplicitParam(name = "pageSize", value = "分页大小", dataType = "Integer", required = false, paramType = "query"),
+        @ApiImplicitParam(name = "dbsourceId", value = "根节点标识, 默认dchetu", dataType = "String", required = false, paramType = "query")
     })
     @RequestMapping(value = "/page", method = {RequestMethod.GET})
     @ResponseBody
-    public Object page(HttpServletRequest request) {
-        UserDo user = LoginUtil.getUser(request);
+    public Object page(QueryDataRequest request) {
+        UserDo user = LoginUtil.getUser();
         TOlkDatabaseDo modelVo = new TOlkDatabaseDo();
-        HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest(request);
-        logger.debug("{}", hru.getAllParaData());
-        new PageBeanWrapper(modelVo, hru);
-
+        MyBeanUtils.copyBean2Bean(modelVo, request);
         ResponeMap resMap = this.genResponeMap();
         try {
-
-//            TOlkDcServerDo dcTmp = new TOlkDcServerDo();
-//            dcTmp.setManageAccount(user.getUserName());
-//            List<TOlkDcServerDo> dcList = dcserverService.find(dcTmp);
-//            if (dcList.size() == 0) {
-//                return resMap.setErr("用户未关联节点").getResultMap();
-//            } else if (dcList.size() > 0) {
-//                modelVo.setDcId(dcList.get(0).getId());
-//            }
-            if (StringUtils.isBlank(modelVo.getUserAccount())) {
-                modelVo.setUserAccount(user.getUserName());
-            }
-
             modelVo.setQryCond(ComUtil.chgLikeStr(modelVo.getQryCond()));
             modelVo.setDbName(ComUtil.chgLikeStr(modelVo.getDbName()));
 
@@ -1106,239 +978,55 @@ public class OlkDatabaseController extends BaseController {
     }
 
     @ApiOperation(value = "刷新模式或表信息", notes = "刷新模式或表信息")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "dbId", value = "目录id", dataType = "String", required = false, paramType = "query"),
-        @ApiImplicitParam(name = "schemaId", value = "模式id", dataType = "String", required = false, paramType = "query"),
-        @ApiImplicitParam(name = "objectId", value = "对象id", dataType = "String", required = false, paramType = "query")
-    })
     @RequestMapping(value = "/refreshschematable", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object refreshSchemaTable(HttpServletRequest request) {
+    public Object refreshSchemaTable(@RequestBody RefreshSchemaRequest request) {
         ResponeMap resMap = this.genResponeMap();
-        try {
-            UserDo user = LoginUtil.getUser(request);
-            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest(request);
-            String dbId = hru.getNvlPara("dbId");
-            String schemaId = hru.getNvlPara("schemaId");
-            String objectId = hru.getNvlPara("objectId");
-            logger.debug("{}", hru.getAllParaData());
 
-            TOlkDatabaseDo olkDb = null;
-            TOlkSchemaDo olkSchema = null;
-            TOlkObjectDo olkObject = null;
+        UserDo user = LoginUtil.getUser();
+        String dbId = request.getDbId();
+        String schemaId = request.getSchemaId();
+        String objectId = request.getObjectId();
 
-            if (StringUtils.isNotBlank(objectId)) {
+        TOlkDatabaseDo olkDb = null;
+        TOlkSchemaDo olkSchema = null;
+        TOlkObjectDo olkObject = null;
 
-                olkObject = objectService.findById(objectId);
-                if (olkObject == null) {
-                    return resMap.setErr("指定对象不存在").getResultMap();
-                }
-                olkDb = databaseService.findById(olkObject.getDbId());
-                olkSchema = schemaService.findById(olkObject.getSchemaId());
-                logger.debug("从对象{}.{}.{}刷新", olkDb.getDcDbName(),
-                    olkSchema.getSchemaName(), olkObject.getObjectName());
-            } else if (StringUtils.isNotBlank(schemaId)) {
-                olkSchema = schemaService.findById(schemaId);
-                if (olkSchema == null) {
-                    return resMap.setErr("指定模式不存在").getResultMap();
-                }
-                olkDb = databaseService.findById(olkSchema.getDbId());
-                logger.debug("从模式{}.{}刷新", olkDb.getDcDbName(),
-                    olkSchema.getSchemaName());
-            } else if (StringUtils.isNotBlank(dbId)) {
-                olkDb = databaseService.findById(dbId);
-                if (olkDb == null) {
-                    return resMap.setErr("指定数据目录不存在").getResultMap();
-                }
-                logger.debug("从目录{}刷新", olkDb.getDcDbName());
-            } else {
-                return resMap.setErr("数据目录、模式id与对象id不能同时为空").getResultMap();
-            }
-
-            String redKey = olkRef + olkDb.getId();
-            boolean bset = redisTemplate.opsForValue()
-                .setIfAbsent(redKey, "1", 3, TimeUnit.MINUTES);
-            if (!bset) {
-                return resMap.setErr(olkDb.getDcDbName() + " 数据正在处理").getResultMap();
-            }
-            final TOlkDatabaseDo dbInfo = olkDb;
-            final TOlkSchemaDo schemaInfo = olkSchema;
-            final TOlkObjectDo objectInfo = olkObject;
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    loadOlkCatalogMeta(dbInfo, schemaInfo, objectInfo, redKey, user);
-                }
-            }, "处理元数据").start();
-
-            resMap.setOk("数据开始处理");
-        } catch (Exception ex) {
-            resMap.setErr("数据处理失败");
-            logger.error("数据处理异常:", ex);
+        if (StringUtils.isNotBlank(objectId)) {
+            olkObject = objectService.findById(objectId);
+            Preconditions.checkArgument(olkObject != null, "指定对象不存在");
+            olkDb = databaseService.findById(olkObject.getDbId());
+            olkSchema = schemaService.findById(olkObject.getSchemaId());
+            logger.debug("从对象{}.{}.{}刷新", olkDb.getDcDbName(),
+                olkSchema.getSchemaName(), olkObject.getObjectName());
+        } else if (StringUtils.isNotBlank(schemaId)) {
+            olkSchema = schemaService.findById(schemaId);
+            Preconditions.checkArgument(olkSchema != null, "指定模式不存在");
+            olkDb = databaseService.findById(olkSchema.getDbId());
+            logger.debug("从模式{}.{}刷新", olkDb.getDcDbName(),
+                olkSchema.getSchemaName());
+        } else if (StringUtils.isNotBlank(dbId)) {
+            olkDb = databaseService.findById(dbId);
+            Preconditions.checkArgument(olkDb != null, "指定数据目录不存在");
+            logger.debug("从目录{}刷新", olkDb.getDcDbName());
+        } else {
+            return resMap.setErr("数据目录、模式id与对象id不能同时为空").getResultMap();
         }
+
+        String redKey = olkRef + olkDb.getId();
+        boolean bset = redisTemplate.opsForValue().setIfAbsent(redKey, "1", 3, TimeUnit.MINUTES);
+        Preconditions.checkArgument(bset, olkDb.getDcDbName() + " 数据正在处理");
+
+        final TOlkDatabaseDo dbInfo = olkDb;
+        final TOlkSchemaDo schemaInfo = olkSchema;
+        final TOlkObjectDo objectInfo = olkObject;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                loadOlkCatalogMeta(dbInfo, schemaInfo, objectInfo, redKey, user);
+            }
+        }, "处理元数据").start();
+
+        resMap.setOk("数据开始处理");
         return resMap.getResultMap();
     }
-
-    @ApiOperation(value = "对用户授权", notes = "对用户授权")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "stype", value = "类型 database,schema,table ", dataType = "String", example = "database,schema,table", required = true, paramType = "query"),
-        @ApiImplicitParam(name = "dataId", value = "数据id", dataType = "String", required = true, paramType = "query"),
-        @ApiImplicitParam(name = "userId", value = "用户Id", dataType = "String", required = true, paramType = "query")
-
-    })
-    @RequestMapping(value = "/grantouser", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object grantoUser(@RequestBody UserGrantDbSchema bean, HttpServletRequest request) {
-        ResponeMap resMap = this.genResponeMap();
-        try {
-            if (bean == null) {
-                return resMap.setErr("数据不能为空").getResultMap();
-            }
-            List<String> userIdList = bean.getUserId();
-            List<String> dataIdList = bean.getDataId();
-
-            if (dataIdList == null || dataIdList.size() == 0) {
-                return resMap.setErr("数据id不能为空").getResultMap();
-            }
-
-            if (userIdList == null || userIdList.size() == 0) {
-                return resMap.setErr("用户id不能为空").getResultMap();
-            }
-
-            UserDo user = LoginUtil.getUser(request);
-
-            SysUserDo qryUser = new SysUserDo();
-            qryUser.setId(String.join(",", userIdList));
-            qryUser.setIsLock(1);
-            ListResp<SysUserDo> retUser = apiTruModelService
-                .nodeUserList(qryUser, user.getTokenId());
-            if (!retUser.isSuccess()) {
-                return resMap.setErr("验证用户失败，" + retUser.getMsg()).getResultMap();
-            }
-            if (retUser.getData().size() != userIdList.size()) {
-                return resMap.setErr("部分用户不存在").getResultMap();
-            }
-            Map<String, SysUserDo> userMap = retUser.getData().stream()
-                .collect(Collectors.toMap(x -> x.getId(), x -> x));
-
-            Example exp = new Example(TOlkDatabaseDo.class);
-            Example.Criteria criteria = exp.createCriteria();
-            criteria.andIn("id", dataIdList).andEqualTo("enable", 1);
-            List<TOlkDatabaseDo> objList = databaseService.findByExample(exp);
-            if (objList.size() != dataIdList.size()) {
-                return resMap.setErr("部分对象已变化或不存在").getResultMap();
-            }
-
-            List<FDataApproveDo> list = new ArrayList<>();
-            for (TOlkDatabaseDo objDo : objList) {
-                for (String s : userIdList) {
-                    if (s.equals(objDo.getUserId())) {
-                        return resMap.setErr("部分为自己对象无需授权").getResultMap();
-                    }
-                    FDataApproveDo da = new FDataApproveDo();
-                    da.setDataId(objDo.getId());
-                    da.setUserId(objDo.getUserId());
-                    da.setUserName(objDo.getUserName());
-                    da.setDataCatalog("database");
-                    da.setTypes(1);
-                    da.setApprove(1);
-                    da.setApproval("直接授权");
-                    da.setId(ComUtil.genId());
-                    SysUserDo userDo = userMap.get(s);
-                    da.setCreatorId(userDo.getId());
-                    da.setCreatorAccount(userDo.getMobile());
-                    da.setCreatorName(userDo.getUsername());
-                    da.setCreatedTime(ComUtil.getCurTimestamp());
-                    list.add(da);
-                }
-            }
-            ListResp<FDataApproveDo> retVal = apiOlkDbService
-                .saveGrantObject(list, user.getTokenId());
-            if (!retVal.isSuccess()) {
-                return resMap.setErr("授权失败," + retVal.getMsg()).getResultMap();
-            }
-
-            resMap.setOk("授权成功");
-        } catch (Exception ex) {
-            resMap.setErr("授权失败");
-            logger.error("授权失败:", ex);
-        }
-        return resMap.getResultMap();
-    }
-
-
-    @ApiOperation(value = "表有权限用户", notes = "表有权限用户")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "id", value = "表id", dataType = "String", required = true, paramType = "query"),
-
-    })
-    @RequestMapping(value = "/tableprivuser", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object tablePrivUser(HttpServletRequest request) {
-        ResponeMap resMap = this.genResponeMap();
-        try {
-            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest(request);
-            String id = hru.getNvlPara("id");
-
-            UserDo user = LoginUtil.getUser(request);
-
-            TOlkObjectDo objectDo = objectService.findById(id);
-            if (objectDo == null) {
-                return resMap.setErr("表不存在").getResultMap();
-            }
-
-            ObjectResp<OlkObjectWithFieldsVo> retVal = apiOlkDbService
-                .olkTableWithSubInfo(objectDo.getId(), user.getTokenId());
-            if (!retVal.isSuccess()) {
-                return resMap.setErr("获取失败," + retVal.getMsg()).getResultMap();
-            }
-            List<FDataApproveVo> approveList = retVal.getData().getApproveList();
-
-            resMap.setSingleOk(approveList, "获取成功");
-        } catch (Exception ex) {
-            resMap.setErr("获取失败");
-            logger.error("获取失败:", ex);
-        }
-        return resMap.getResultMap();
-    }
-
-    @ApiOperation(value = "用户有权限表", notes = "用户有权限表")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "userId", value = "用户id", dataType = "", required = true, paramType = "query"),
-        @ApiImplicitParam(name = "dbId", value = "目录id", dataType = "", required = false, paramType = "query"),
-        @ApiImplicitParam(name = "schemaId", value = "库id", dataType = "", required = false, paramType = "query"),
-        @ApiImplicitParam(name = "objectId", value = "表id", dataType = "", required = false, paramType = "query"),
-
-    })
-    @RequestMapping(value = "/userprivtable", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object userPrivTable(HttpServletRequest request) {
-        ResponeMap resMap = this.genResponeMap();
-        try {
-            OlkObjectWithFieldsVo obj = new OlkObjectWithFieldsVo();
-            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest(request);
-            obj.setGrantUserId(hru.getNvlPara("userId"));
-            obj.setDbId(ComUtil.trsEmpty(hru.getNvlPara("dbId"), null));
-            obj.setSchemaId(ComUtil.trsEmpty(hru.getNvlPara("schemaId"), null));
-            obj.setId(ComUtil.trsEmpty(hru.getNvlPara("objectId"), null));
-            UserDo user = LoginUtil.getUser(request);
-            if (StringUtils.isBlank(obj.getGrantUserId())) {
-                return resMap.setErr("用户id不能为空").getResultMap();
-            }
-
-            ListResp<OlkObjectWithFieldsVo> retVal = apiOlkDbService
-                .userOlkTableWithInfo(obj, user.getTokenId());
-            if (!retVal.isSuccess()) {
-                return resMap.setErr("获取失败," + retVal.getMsg()).getResultMap();
-            }
-            List<OlkObjectWithFieldsVo> dataList = retVal.getData();
-
-            resMap.setSingleOk(dataList, "获取成功");
-        } catch (Exception ex) {
-            resMap.setErr("获取失败");
-            logger.error("获取失败:", ex);
-        }
-        return resMap.getResultMap();
-    }
-
 }
