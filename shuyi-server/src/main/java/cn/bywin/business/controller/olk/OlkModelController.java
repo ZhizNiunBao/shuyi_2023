@@ -1,5 +1,7 @@
 package cn.bywin.business.controller.olk;
 
+import static cn.bywin.business.common.enums.TreeRootNodeEnum.MODEL_OBJECT;
+
 import cn.bywin.business.bean.analysis.olk.OlkBaseComponenT;
 import cn.bywin.business.bean.analysis.olk.OlkCheckComponent;
 import cn.bywin.business.bean.analysis.olk.OlkComponentEnum;
@@ -751,240 +753,113 @@ public class OlkModelController extends BaseController {
         if ( StringUtils.isEmpty( id ) ) {
             return result.setErr( "ID不能为空" ).getResultMap();
         }
-        try {
-            logger.debug( "id:{},qryCond:{}", id, qryCond );
-            UserDo user = LoginUtil.getUser();
-            List<Object> retList = new ArrayList<>();
-            TOlkModelDo modelDo = truModelService.findById( id );
+        logger.debug( "id:{},qryCond:{}", id, qryCond );
+        List<Object> retList = new ArrayList<>();
+        TOlkModelDo modelDo = truModelService.findById( id );
 
-            List<NodePartyView> npList = apiTruModelService.allNodeParty( null, user.getTokenId() );
+        List<TOlkModelObjectDo> modObjList = truModelObjectService.selectByModelId( modelDo.getId() );
+        if ( StringUtils.isNotBlank( qryCond ) ) {
+            String cnd = qryCond.trim();
+            modObjList = modObjList.stream().filter( x -> x.getObjectName().indexOf( cnd ) >= 0 || ComUtil.trsEmpty( x.getObjChnName() ).indexOf( cnd ) >= 0 ).collect( Collectors.toList() );
+        }
 
-            ListResp<VOlkObjectVo> moVal = apiOlkDbService.findOlkModelObjecRelData( modelDo.getId(), user.getTokenId() );
-            if ( !moVal.isSuccess() ) {
-                return result.setErr( "获取模型对象失败" ).getResultMap();
-            }
+        List<TOlkModelObjectDo> dealList = new ArrayList<>();
 
-            Map<String, VOlkObjectVo> moMap = new HashMap<>();
-            for ( VOlkObjectVo tmp : moVal.getData() ) {
-                //if ( tmp.getUserObjPriv() != null && tmp.getUserObjPriv() == 1 ) {
-                    moMap.put( tmp.getId(), tmp );
-                //}
-            }
+        HashMap<String, Object> dMap2 = new HashMap<>();
+        dMap2.put( "id", MODEL_OBJECT.getId());
+        dMap2.put( "modelId", id );
+        dMap2.put( "type", "node" );
+        dMap2.put( "schemaId", "" );
+        dMap2.put( "dbId", "" );
+        dMap2.put( "npId", MODEL_OBJECT.getId());
+        dMap2.put( "hasLeaf", true );
+        dMap2.put( "name", MODEL_OBJECT.getName());
+        dMap2.put( "tips", MODEL_OBJECT.getTitle());
+        List<Object> d2List = new ArrayList<>();
+        for ( TOlkModelObjectDo moDo : modObjList ) {
+            dealList.add( moDo );
+            HashMap<String, Object> dMap = new HashMap<>();
+            dMap.put( "id", moDo.getId() );
+            dMap.put( "type", "db" );
+            dMap.put( "modelId", id );
+            dMap.put( "stype", moDo.getStype() );
+            dMap.put( "objectId", moDo.getRealObjId() );
+            dMap.put( "hasLeaf", true );
+            dMap.put( "name", moDo.getObjFullName() );
+            dMap.put( "simpleName", moDo.getObjectName() );
+            dMap.put( "objectName", moDo.getObjectName() );
+            dMap.put( "objChnName", moDo.getObjChnName() );
+            dMap.put( "objFullName", moDo.getObjFullName() );
+            d2List.add( dMap );
+        }
+        if ( d2List.size() > 0 ) {
+            dMap2.put( "children", d2List );
+            retList.add( dMap2 );
+        }
 
-            List<TOlkModelObjectDo> modObjList = truModelObjectService.selectByModelId( modelDo.getId() );
-            if ( StringUtils.isNotBlank( qryCond ) ) {
-                String cnd = qryCond.trim();
-                modObjList = modObjList.stream().filter( x -> x.getObjectName().indexOf( cnd ) >= 0 || ComUtil.trsEmpty( x.getObjChnName() ).indexOf( cnd ) >= 0 ).collect( Collectors.toList() );
-            }
+        modObjList.removeAll( dealList );
 
-//            Map<String, String> dbMap = new HashMap<>();
-//            for ( DigitalAssetVo tmp : modelObjecRelData ) {
-//                if ( !dbMap.containsKey( tmp.getDbId() ) ) {
-//                    dbMap.put( tmp.getDbId(), tmp.getDcDbName() );
-//                }
-//            }
+        List<HashMap<String, Object>> dList = null;
+        if ( modObjList.size() > 0 ) {
+            String dcId = "dcId";
+            dList = new ArrayList<>();
+            //idMap.put( dcId, dList );
+            HashMap<String, Object> dMap = new HashMap<>();
+            dMap.put( "id", dcId );
+            dMap.put( "modelId", id );
+            dMap.put( "type", "dc" );
+            dMap.put( "schemaId", "" );
+            dMap.put( "dbId", "" );
+            dMap.put( "hasLeaf", true );
+            dMap.put( "name", "资源已失效或已删除" );
+            //dMap.put("tips", String.format("%s", nvl(dcDo.getDcName(), dcDo.getDcCode())));
+            dMap.put( "children", dList );
+            retList.add( dMap );
+        }
+        for ( TOlkModelObjectDo dat : modObjList ) {
 
-//            Example exp = new Example( TOlkGrantObjectDo.class );
-//            Example.Criteria criteria = exp.createCriteria();
-//            criteria.andEqualTo( "toAccount", modelDo.getCreatorAccount() );
-//            criteria.andCondition( "rel_id  in( select object_id from t_tru_model_object where model_id ='" + id + "' )" );
+            String priv = "资源不存在或已删除";
 
-//            List<TOlkGrantObjectDo> grantList = grantObjectService.findByExample( exp );
-
-//            exp = new Example( TOlkApplyObjectDo.class );
-//            criteria = exp.createCriteria();
-//            criteria.andEqualTo( "applyAccount", modelDo.getCreatorAccount() );
-//            criteria.andCondition( "rel_id  in( select object_id from t_tru_model_object where model_id ='" + id + "' )" );
-//            List<TOlkApplyObjectDo> applyList = applyObjectService.findByExample( exp );
-
-            HashMap<String, List<HashMap<String, Object>>> idMap = new HashMap<>();
-//            List<TOlkModelObjectDo> undelList = new ArrayList<>();
-
-            List<TOlkModelObjectDo> dealList = new ArrayList<>();
-            for ( NodePartyView nodePartyView : npList ) {
-
-                HashMap<String, Object> dMap2 = new HashMap<>();
-                dMap2.put( "id", nodePartyView.getId() );
-                dMap2.put( "modelId", id );
-                dMap2.put( "type", "node" );
-                dMap2.put( "schemaId", "" );
-                dMap2.put( "dbId", "" );
-                dMap2.put( "npId", nodePartyView.getId() );
-                dMap2.put( "hasLeaf", true );
-                dMap2.put( "name", nodePartyView.getName() );
-                dMap2.put( "tips", nodePartyView.getName() );
-                List<Object> d2List = new ArrayList<>();
-                for ( TOlkModelObjectDo moDo : modObjList ) {
-                    if ( !nodePartyView.getId().equals( moDo.getNodePartyId() ) ) continue;
-
-                    String priv = "权限:未授权";
-                    VOlkObjectVo dat = moMap.get( moDo.getRealObjId() );
-                    if ( dat == null ) {
-                        continue;
-                    }
-                    else {
-                        dealList.add( moDo );
-                        if ( modelDo.getCreatorId().equals( dat.getUserId() ) ) {
-                            priv = "权限:自己的";
-                            dat.setUserPrivGrant( 3 );
-                        }
-                        else {
-                            if ( dat.getUserPrivGrant() != null ) {
-                                if ( dat.getUserPrivGrant() == 3 ) {
-                                    priv = "权限:自己的";
-                                }
-                                else if ( dat.getUserPrivGrant() == 1 ) {
-                                    priv = "权限:已授权";
-                                }
-                                else if ( dat.getUserPrivGrant() == 2 ) {
-                                    priv = "权限:已申请";
-                                }
-                            }
-                            else {
-                                priv = "权限:未申请";
-                                dat.setUserPrivGrant( 10 );
-                            }
-                        }
-
-                        if ( "odb".equals( dat.getScatalog() ) || "db".equals( dat.getScatalog() ) ) {
-                            HashMap<String, Object> dMap = new HashMap<>();
-                            dMap.put( "id", moDo.getId() );
-                            dMap.put( "type", "db" );
-                            dMap.put( "modelId", id );
-                            dMap.put( "stype", dat.getStype() );
-                            dMap.put( "objectId", moDo.getRealObjId() );
-                            //dMap.put( "privFlag", dat.getPrivFlag() );
-                            dMap.put( "hasLeaf", true );
-//                            if ( dat.getDelFlag() != null && dat.getDelFlag() == 1 ) {
-//                                dMap.put( "enable", 99 );
-//                            }
-//                            else {
-//                                dMap.put( "enable", dat.getEnable() );
-//                            }
-                            dMap.put( "userPrivGrant", dat.getUserPrivGrant() == null ? 10 : dat.getUserPrivGrant() );
-                            //dMap.put("name", dat.getObjFullName().substring(dat.getDcCode().length() + 1));
-                            dMap.put( "name", dat.getObjFullName() );
-                            dMap.put( "simpleName", dat.getObjectName() );
-                            dMap.put( "objectName", dat.getObjectName() );
-                            dMap.put( "objChnName", dat.getObjChnName() );
-                            if(StringUtils.isBlank( modelDo.getDcId() )) {
-                                dMap.put( "objFullName", dat.getObjFullName() );
-                            }
-                            else{
-                                int idx = dat.getObjFullName().indexOf( "." );
-                                dMap.put( "objFullName", dat.getObjFullName().substring( idx+1 ) );
-                            }
-                            dMap.put( "tips", String.format( "%s \r\n%s \r\n%s \r\n%s \r\n%s", dat.getUserName(), nvl( dat.getDbChnName(), dat.getDbName() ),
-                                    nvl( dat.getSchemaChnName(), dat.getSchemaName() ), nvl( dat.getObjChnName(), dat.getObjectName() ), priv ) );
-                            d2List.add( dMap );
-                        }
-                        else {
-                            HashMap<String, Object> dMap = new HashMap<>();
-                            dMap.put( "id", moDo.getId() );
-                            dMap.put( "type", "ds" );
-                            dMap.put( "modelId", id );
-                            dMap.put( "stype", dat.getStype() );
-                            dMap.put( "objectId", moDo.getRealObjId() );
-                            //dMap.put( "privFlag", dat.getPrivFlag() );
-                            dMap.put( "name", dat.getObjectName() );
-                            dMap.put( "hasLeaf", false );
-                            if ( dat.getDelFlag() != null && dat.getDelFlag() == 1 ) {
-                                dMap.put( "enable", 99 );
-                            }
-                            else {
-                                dMap.put( "enable", dat.getEnable() );
-                            }
-                            dMap.put( "userPrivGrant", dat.getUserPrivGrant() == null ? 10 : dat.getUserPrivGrant() );
-                            dMap.put( "objectName", dat.getObjectName() );
-                            dMap.put( "objChnName", dat.getObjChnName() );
-                            dMap.put( "objFullName", dat.getObjFullName() );
-                            dMap.put( "tips", String.format( "%s\r\n%s", nvl( dat.getObjChnName(), dat.getObjectName() ), priv ) );
-                            //dMap.put( "tips", String.format( "%s", nvl( dat.getObjChnName(), dat.getObjectName() ) ) );
-                            d2List.add( dMap );
-                        }
-                    }
-                }
-                if ( d2List.size() > 0 ) {
-                    dMap2.put( "children", d2List );
-                    retList.add( dMap2 );
-                }
-                //}
-                //if( subList.size()>0){
-                //dMap1.put( "children", subList );
-                //retList.add( dMap1 );
-                //}
-            }
-
-            modObjList.removeAll( dealList );
-
-            List<HashMap<String, Object>> dList = null;
-            if ( modObjList.size() > 0 ) {
-                String dcId = "dcId";
-                dList = new ArrayList<>();
-                //idMap.put( dcId, dList );
+            if ( "odb".equals( dat.getStype() ) ) {
                 HashMap<String, Object> dMap = new HashMap<>();
-                dMap.put( "id", dcId );
+                dMap.put( "id", dat.getId() );
+                dMap.put( "type", "db" );
                 dMap.put( "modelId", id );
-                dMap.put( "type", "dc" );
-                dMap.put( "schemaId", "" );
-                dMap.put( "dbId", "" );
-                dMap.put( "dcId", dcId );
+                dMap.put( "stype", dat.getStype() );
+                dMap.put( "objectId", dat.getId() );
+                dMap.put( "privFlag", null );
                 dMap.put( "hasLeaf", true );
-                dMap.put( "name", "资源已失效或已删除" );
-                //dMap.put("tips", String.format("%s", nvl(dcDo.getDcName(), dcDo.getDcCode())));
-                dMap.put( "children", dList );
-                retList.add( dMap );
+                dMap.put( "enable", 99 );
+                dMap.put( "userPrivGrant", 9 );
+                dMap.put( "name", dat.getObjectName() );
+                dMap.put( "simpleName", dat.getObjectName() );
+                dMap.put( "objectName", dat.getObjectName() );
+                dMap.put( "objChnName", dat.getObjChnName() );
+                dMap.put( "objFullName", dat.getObjFullName() );
+                dMap.put( "tips", String.format( "%s\r\n%s", nvl( dat.getObjChnName(), dat.getObjectName() ), priv ) );
+                dList.add( dMap );
             }
-            for ( TOlkModelObjectDo dat : modObjList ) {
+            else {
+                HashMap<String, Object> dMap = new HashMap<>();
+                dMap.put( "id", dat.getId() );
+                dMap.put( "type", "ds" );
+                dMap.put( "stype", dat.getStype() );
+                dMap.put( "objectId", dat.getRealObjId() );
+                dMap.put( "privFlag", null );
+                dMap.put( "name", dat.getObjectName() );
+                dMap.put( "hasLeaf", true );
 
-                String priv = "资源不存在或已删除";
+                dMap.put( "enable", 99 );
+                dMap.put( "userPrivGrant", 9 );
 
-                if ( "odb".equals( dat.getStype() ) ) {
-                    HashMap<String, Object> dMap = new HashMap<>();
-                    dMap.put( "id", dat.getId() );
-                    dMap.put( "type", "db" );
-                    dMap.put( "modelId", id );
-                    dMap.put( "stype", dat.getStype() );
-                    dMap.put( "objectId", dat.getId() );
-                    dMap.put( "privFlag", null );
-                    dMap.put( "hasLeaf", true );
-                    dMap.put( "enable", 99 );
-                    dMap.put( "userPrivGrant", 9 );
-                    dMap.put( "name", dat.getObjectName() );
-                    dMap.put( "simpleName", dat.getObjectName() );
-                    dMap.put( "objectName", dat.getObjectName() );
-                    dMap.put( "objChnName", dat.getObjChnName() );
-                    dMap.put( "objFullName", dat.getObjFullName() );
-                    dMap.put( "tips", String.format( "%s\r\n%s", nvl( dat.getObjChnName(), dat.getObjectName() ), priv ) );
-                    dList.add( dMap );
-                }
-                else {
-                    HashMap<String, Object> dMap = new HashMap<>();
-                    dMap.put( "id", dat.getId() );
-                    dMap.put( "type", "ds" );
-                    dMap.put( "stype", dat.getStype() );
-                    dMap.put( "objectId", dat.getRealObjId() );
-                    dMap.put( "privFlag", null );
-                    dMap.put( "name", dat.getObjectName() );
-                    dMap.put( "hasLeaf", true );
-
-                    dMap.put( "enable", 99 );
-                    dMap.put( "userPrivGrant", 9 );
-
-                    dMap.put( "objectName", dat.getObjectName() );
-                    dMap.put( "objChnName", dat.getObjChnName() );
-                    dMap.put( "objFullName", dat.getObjFullName() );
-                    dMap.put( "tips", String.format( "%s\r\n%s", nvl( dat.getObjChnName(), dat.getObjectName() ), priv ) );
-                    dList.add( dMap );
-                }
+                dMap.put( "objectName", dat.getObjectName() );
+                dMap.put( "objChnName", dat.getObjChnName() );
+                dMap.put( "objFullName", dat.getObjFullName() );
+                dMap.put( "tips", String.format( "%s\r\n%s", nvl( dat.getObjChnName(), dat.getObjectName() ), priv ) );
+                dList.add( dMap );
             }
-
-            result.setSingleOk( retList, "获取模型数据表树成功" );
         }
-        catch ( Exception e ) {
-            logger.error( "获取模型数据表树失败,", e );
-            result.setErr( "获取模型数据表树失败" );
-        }
+        result.setSingleOk( retList, "获取模型数据表树成功" );
         return result.getResultMap();
     }
 
@@ -2902,7 +2777,6 @@ public class OlkModelController extends BaseController {
             modelVo.setId( objId );
             FNodePartyDo nodePartyDo = nodePartyService.findFirst();
             modelVo.setOwnerId( user.getUserId() );
-            modelVo.setUserNodePartyId( nodePartyDo.getId() );
             modelVo.setScatalog( "db" );
             modelVo.setDataType( "nodeview" );
 
@@ -2929,22 +2803,6 @@ public class OlkModelController extends BaseController {
                 //List<NodePartyView> nodePartyViews = apiOlkModelService.nodePartys(data.getNodePartyId(), user.getTokenId() );
                 //TBydbObjectDo objectDo = new TBydbObjectDo();
                 //MyBeanUtils.copyBeanNotNull2Bean( data,objectDo );
-                if ( digitalAssetVo.getUserPrivGrant() == null || digitalAssetVo.getUserPrivGrant() != 3 ) {
-                    List<FDataApproveDo> daList = new ArrayList<>();
-                    FDataApproveDo da = new FDataApproveDo();
-                    da.setCreatorId( user.getUserId() );
-                    da.setDataId( objId );
-                    daList.add( da );
-                    ListResp<FDataApproveVo> daRet = apiTruModelService.queryUserApprove( daList, user.getTokenId() );
-                    if ( daRet.isSuccess() ) {
-                        if ( daRet.getData().size() > 0 ) {
-                            digitalAssetVo.setUserPrivGrant( daRet.getData().get( 0 ).getApprove() );
-                        }
-                        else {
-                            digitalAssetVo.setUserPrivGrant( 10 );
-                        }
-                    }
-                }
                 resMap.put( "tabledataset", digitalAssetVo );
 //                for ( NodePartyView nodePartyView : nodePartyViews ) {
 //                    if(data.getNodePartyId().equals( nodePartyView.getId() )){
@@ -2962,30 +2820,6 @@ public class OlkModelController extends BaseController {
             logger.error( "模型对象详情失败:", ex );
         }
         return resMap.getResultMap();
-    }
-
-    @ApiOperation(value = "节点用户", notes = "节点用户")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "nodePartyId", value = "节点id", dataType = "String", required = false, paramType = "query")
-    })
-    @RequestMapping(value = "/pmsuserlist", method = {RequestMethod.GET})
-    @ResponseBody
-    public Object pmsUserlist(HttpServletRequest request) {
-        ResponeMap result = new ResponeMap();
-        try {
-            UserDo ud = LoginUtil.getUser(request);
-            if (ud == null) {
-                return result.setErr("用户未登录").getResultMap();
-            }
-            SysUserDo bean = new SysUserDo();
-            ListResp<SysUserDo> retVal = apiTruModelService.nodeUserList( bean, ud.getTokenId() );
-
-            return  retVal;
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            result.setErr("获取节点用户异常");
-        }
-        return result.getResultMap();
     }
 
 }

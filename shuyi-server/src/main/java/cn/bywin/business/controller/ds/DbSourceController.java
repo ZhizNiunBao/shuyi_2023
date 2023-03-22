@@ -216,7 +216,7 @@ public class DbSourceController extends BaseController {
 //                }
                 databaseDo.setCatalogType( cataTypeDo.getId() );
             }
-            Integer maxOrder = databaseService.findMaxOrder( ud.getUserName() );
+            Integer maxOrder = databaseService.findMaxOrder();
             int norder = 10;
             if ( maxOrder != null ) {
                 norder = maxOrder.intValue() + 10;
@@ -626,31 +626,8 @@ public class DbSourceController extends BaseController {
             if ( cnt != null && cnt > 0 ) {
                 return resMap.setErr( "有数据源被使用，不能删除" ).getResultMap();
             }
-
-            ObjectResp<String> retVal = apiTruModelService.delDbsource( idList, user.getTokenId() );
-            if ( retVal.isSuccess() ) {
-                dbSourceService.deleteList( list );
-            }
-            else {
-                return retVal;
-            }
-
-//            String times = String.valueOf( System.currentTimeMillis() );
-//            for ( FDatasourceDo info : list ) {
-//                try {
-//                    HashMap<String, Object> map = new HashMap<>();
-//
-//                    //String msg = JsonUtil.toJson(map);
-//
-//                    //new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).delLog(user, info, msg,"删除-数据源" + times);
-//                }
-//                catch ( Exception e1 ) {
-//                    resMap.setErr( "删除失败" );
-//                    logger.error( "删除异常:", e1 );
-//                }
-//            }
+            dbSourceService.deleteList( list );
             resMap.setOk( "删除成功" );
-
         }
         catch ( Exception ex ) {
             resMap.setErr( "删除失败" );

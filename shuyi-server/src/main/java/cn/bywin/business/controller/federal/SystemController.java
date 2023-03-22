@@ -84,8 +84,7 @@ public class SystemController extends BaseController {
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
-    @Value("${pmServerUrl}")
-    private String pmServerUrl;
+
     @Value("${exchangeServerUrl}")
     private String exchangeServerUrl;
     @Value("${flowServerUrl}")
@@ -135,38 +134,6 @@ public class SystemController extends BaseController {
         } catch (Exception e) {
             logger.error("更新失败", e);
             result.setErr("更新失败");
-        }
-        return result.getResultMap();
-    }
-
-    @ApiOperation(value = "首页服务列表", notes = "首页服务列表")
-    @RequestMapping(value = "/homelist", method = {RequestMethod.GET})
-    public Map<String, Object> homeList(HttpServletRequest request) {
-        ResponeMap result = genResponeMap();
-        try {
-            FNodePartyDo nodePartyDo = nodePartyService.findAll().get(0);
-            if (nodePartyDo == null) {
-                return result.setErr("节点不存在").getResultMap();
-            }
-            Integer pmServerUrlValue = StringUtils.isBlank(redisTemplate.opsForValue().get("pms")) ? 1 :
-                    Integer.parseInt(redisTemplate.opsForValue().get("pms"));
-            Integer exchangeServerUrlValue = StringUtils.isBlank(redisTemplate.opsForValue().get("exchange")) ? 1 :
-                    Integer.parseInt(redisTemplate.opsForValue().get("exchange"));
-            Integer flowServerUrlValue = StringUtils.isBlank(redisTemplate.opsForValue().get("flow")) ? 1 :
-                    Integer.parseInt(redisTemplate.opsForValue().get("flow"));
-            List<ServerUrlVo> data = new ArrayList<>();
-            data.add(new ServerUrlVo(pmServerUrlValue, "pms", StringUtils.isBlank(nodePartyDo.getPmsAddress())
-                    ? pmServerUrl : nodePartyDo.getPmsAddress(), "联邦节点管理服务，存储了联邦中的可公开信息并提供给联邦中的节点访问"));
-            data.add(new ServerUrlVo(exchangeServerUrlValue, "exchange", StringUtils.isBlank(nodePartyDo.getExchangeAddress())
-                    ? exchangeServerUrl : nodePartyDo.getExchangeAddress(), "exchange协调服务"));
-            data.add(new ServerUrlVo(flowServerUrlValue, "flow", StringUtils.isBlank(nodePartyDo.getFlowAddress())
-                    ? flowServerUrl : nodePartyDo.getFlowAddress(), "节点服务"));
-            result.setSingleOk(data, "获取成功");
-
-            result.getResultMap().put("info", nodePartyDo);
-        } catch (Exception e) {
-            logger.error("获取失败", e);
-            result.setErr("获取失败");
         }
         return result.getResultMap();
     }

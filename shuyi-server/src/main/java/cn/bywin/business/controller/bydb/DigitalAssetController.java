@@ -210,14 +210,9 @@ public class DigitalAssetController extends BaseController {
 
             FNodePartyDo nodePartyDo = nodePartyService.findFirst();
             modelVo.setOwnerId( user.getUserId() );
-            //modelVo.setUserName( user.getUserName() );
-            modelVo.setUserNodePartyId( nodePartyDo.getId() );
             modelVo.setScatalog( "db" );
-            if( "priv".equalsIgnoreCase(modelVo.getDataType())){
-                modelVo.setNodePartyId( nodePartyDo.getId() );
-                modelVo.setUserId( user.getUserId() );
-            }
-            else if( "node".equalsIgnoreCase(modelVo.getDataType())){
+
+            if( "node".equalsIgnoreCase(modelVo.getDataType())){
 
             }
 //            else if( "priv".equalsIgnoreCase(modelVo.getDataType())){

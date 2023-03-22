@@ -7,9 +7,14 @@ package cn.bywin.business.common.enums;
 public enum TreeRootNodeEnum {
 
     /**
-     * 联邦资源数据源
+     * 联邦资源数据源根节点
      */
-    DATASOURCE("root", "数据资源", "数据资源");
+    DATASOURCE("root", "数据源", "数据源"),
+
+    /**
+     * 模型资源树根节点
+     */
+    MODEL_OBJECT("root", "数据资源", "数据资源");
 
     private String id;
 

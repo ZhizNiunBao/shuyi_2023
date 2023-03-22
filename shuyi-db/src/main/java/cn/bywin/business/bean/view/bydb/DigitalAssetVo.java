@@ -30,18 +30,6 @@ public class DigitalAssetVo extends SidEntityDo {
 	@ApiModelProperty(required = false, value = "", hidden = true, example = "")
 	@Column(name = "obj_id")
 	private String objId;
-	/**
-	 *
-	 */
-	@ApiModelProperty(required = false, value = "", hidden = true, example = "")
-	@Column(name = "dc_id")
-	private String dcId;
-	@ApiModelProperty(required = false, value = "", hidden = true, example = "")
-	@Column(name = "node_party_id")
-	private String nodePartyId;
-	@ApiModelProperty(required = false, value = "数据中心名称", hidden = true, example = "")
-	@Column(name = "node_party_name")
-	private String nodePartyName;
 
 	@ApiModelProperty(required = false, value = "", hidden = true, example = "")
 	@Column(name = "owner_id")
@@ -54,10 +42,6 @@ public class DigitalAssetVo extends SidEntityDo {
 	@ApiModelProperty(required = false, value = "", hidden = true, example = "")
 	@Column(name = "user_name")
 	private String userName;
-
-	@ApiModelProperty(required = false, value = "", hidden = true, example = "")
-	@Column(name = "user_node_party_id")
-	private String userNodePartyId;
 
 	@ApiModelProperty(required = false, value = "", hidden = true, example = "")
 	@Column(name = "share_flag")
@@ -114,10 +98,6 @@ public class DigitalAssetVo extends SidEntityDo {
 	@Column(name = "priv_flag")
 	private Integer privFlag;
 
-	@ApiModelProperty(required = false, value = "", hidden = true, example = "")
-	@Column(name = "user_priv_grant")
-	private Integer userPrivGrant;
-
 	/**
 	 *
 	 */
@@ -166,26 +146,6 @@ public class DigitalAssetVo extends SidEntityDo {
 	@ApiModelProperty(required = false, value = "", hidden = true, example = "")
 	@Column(name = "db_chn_name")
 	private String dbChnName;
-	/**
-	 * 数据中心代码
-	 */
-//	@ApiModelProperty(required = false, value = "数据中心代码", hidden = true, example = "")
-//	@Column(name = "dc_code")
-//	private String dcCode;
-	/**
-	 * 数据中心名称
-	 */
-//	@ApiModelProperty(required = false, value = "数据中心名称", hidden = true, example = "")
-//	@Column(name = "dc_name")
-//	private String dcName;
-
-//	@ApiModelProperty(required = false, value = "部门代码", hidden = true, example = "")
-//	@Column(name = "dept_no")
-//	private String deptNo;
-
-//	@ApiModelProperty(required = false, value = "部门名称", hidden = true, example = "")
-//	@Column(name = "dept_name")
-//	private String deptName;
 
 	@ApiModelProperty(required = false, value = "删除标志", hidden = true, example = "")
 	@Column(name = "del_flag")
@@ -195,9 +155,6 @@ public class DigitalAssetVo extends SidEntityDo {
 	@Column(name = "enable")
 	private Integer enable;
 
-	/**
-	 * 数据中心名称
-	 */
 	@ApiModelProperty(required = false, value = "备注", hidden = true, example = "")
 	@Column(name = "remark")
 	private String remark;
@@ -209,22 +166,6 @@ public class DigitalAssetVo extends SidEntityDo {
 	@ApiModelProperty(required = false, value = "收藏次数", hidden = true, example = "")
 	@Column(name = "favourite_count")
 	private Integer favouriteCount;
-
-	@ApiModelProperty(required = false, value = "授权收藏", hidden = true, example = "")
-	@Column(name = "grant_flag")
-	private Integer grantFlag;
-
-	@ApiModelProperty(required = false, value = "授权次数", hidden = true, example = "")
-	@Column(name = "grant_count")
-	private Integer grantCount;
-
-	@ApiModelProperty(required = false, value = "是否申请", hidden = true, example = "")
-	@Column(name = "apply_flag")
-	private Integer applyFlag;
-
-	@ApiModelProperty(required = false, value = "申请次数", hidden = true, example = "")
-	@Column(name = "apply_count")
-	private Integer applyCount;
 
 	@ApiModelProperty(required = false, value = "用户评论条数", hidden = true, example = "")
 	@Column(name = "discuss_user_count")

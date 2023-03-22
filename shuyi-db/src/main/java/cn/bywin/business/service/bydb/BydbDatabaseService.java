@@ -58,8 +58,8 @@ public class BydbDatabaseService extends BaseServiceImpl<TBydbDatabaseDo, String
 	}
 
 
-	public Integer findMaxOrder( String dcId){
-		return commMapper.findMaxOrder( dcId );
+	public Integer findMaxOrder(){
+		return commMapper.findMaxOrder();
 	}
 
 	/**

@@ -35,8 +35,8 @@ public interface BydbDatabaseMapper extends Mapper<TBydbDatabaseDo>, MySqlMapper
     @Update(value = " update t_bydb_database set syn_flag = 0, enable=#{enable}  where id=#{id} and (enable is null or enable !=#{enable})  ")
     long updateEnable( TBydbDatabaseDo bean );
 
-    @Select(value = " select max(norder) norder from  t_bydb_database where dc_id= #{dcId} " )
-    Integer findMaxOrder(@Param("dcId") String dcId);
+    @Select(value = " select max(norder) norder from  t_bydb_database" )
+    Integer findMaxOrder();
 //    @Select(value = " select max(norder) norder from  t_bydb_database ")
 //    Integer findMaxOrder();
 

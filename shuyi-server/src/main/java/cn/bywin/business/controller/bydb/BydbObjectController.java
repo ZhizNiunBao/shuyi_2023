@@ -423,13 +423,7 @@ public class BydbObjectController extends BaseController {
 
 
 
-            ObjectResp<String> retVal = apiTruModelService.delTable( idList, user.getTokenId() );
-            if( retVal.isSuccess() ){
-                bydbObjectService.deleteWhithOthers( list );
-            }
-            else{
-                return retVal;
-            }
+            bydbObjectService.deleteWhithOthers( list );
 
 //            String times = String.valueOf( System.currentTimeMillis() );
 //            for (TBydbObjectDo info : list) {

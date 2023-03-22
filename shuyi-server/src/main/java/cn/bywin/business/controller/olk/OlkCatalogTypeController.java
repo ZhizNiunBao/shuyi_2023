@@ -54,9 +54,6 @@ public class OlkCatalogTypeController extends BaseController {
     @Autowired
     private OlkCatalogTypeService typeService;
 
-    @Autowired
-    private OlkDcServerService dcService;
-
     @ApiOperation(value = "新增olk目录分组", notes = "新增olk目录分组")
     @RequestMapping(value = "/add", method = {RequestMethod.POST})
     public Object add(@RequestBody AddCatalogRequest request) {
@@ -219,95 +216,4 @@ public class OlkCatalogTypeController extends BaseController {
         }
         return resMap.getResultMap();
     }
-
-
-
-    @ApiOperation(value = "目录分组树", notes = "目录分组树")
-    @ApiImplicitParams({
-             @ApiImplicitParam(name = "id", value = "模型信息", dataType = "String", required = false, paramType = "form")
-    })
-    @RequestMapping(value = "/typetree", method = {RequestMethod.GET})
-    @ResponseBody
-    public Object typeTree(HttpServletRequest request) {
-        ResponeMap resMap = this.genResponeMap();
-        try {
-            UserDo user = LoginUtil.getUser(request);
-
-            TOlkDcServerDo dcTmp = new TOlkDcServerDo();
-            dcTmp.setEnable( 1 );
-            List<TOlkDcServerDo> dcList = dcService.findBeanList(dcTmp);
-
-            HttpRequestUtil hru = HttpRequestUtil.parseHttpRequest(request);
-            String type = hru.getNvlPara("type");
-            if (type == null || type.equals("")) {
-                type = "root";
-            }
-
-            String pid = hru.getNvlPara("id");
-
-            logger.debug("{}",hru.getAllParaData());
-
-//            String connectChar = "^";
-//            String splitChar = "\\^";
-
-            List<Object> dataList = new ArrayList<>();
-
-            TOlkCatalogTypeDo bean = new TOlkCatalogTypeDo();
-            bean.setUserAccount( user.getUserName() );
-            final List<TOlkCatalogTypeDo> itemList = typeService.findBeanList(bean);
-
-            for ( TOlkDcServerDo dcDo : dcList ) {
-                HashMap<String,Object> node = new HashMap<String,Object>();
-                node.put("type","dc");
-                node.put("Id",dcDo.getId());
-                node.put("relId",dcDo.getId());
-                node.put("value",dcDo.getDcCode());
-                node.put("name",dcDo.getDcName());
-                node.put("title",dcDo.getDcName());
-                node.put("folderId","");
-                List<Object> subList = makeTreeNode(dcDo.getId(), itemList, pid );
-                node.put("children", subList);
-                dataList.add(  node );
-            }
-            resMap.setSingleOk( dataList,"获取树结构成功");
-                return resMap.setOk().getResultMap();
-
-        } catch (Exception ex) {
-            resMap.setErr("获取树结构失败");
-            logger.error("获取树结构异常:", ex);
-        }
-        return resMap.getResultMap();
-    }
-
-    private List<Object> makeTreeNode(String dcId, List<TOlkCatalogTypeDo> list,String pid){
-        List<Object> retList = new ArrayList<>();
-        for (TOlkCatalogTypeDo temp : list) {
-            if( ComUtil.trsEmpty( pid).equals( ComUtil.trsEmpty( temp.getPid() ) )){
-                HashMap<String,Object> node = new HashMap<String,Object>();
-                node.put("type","folder");
-                node.put("Id", temp.getId());
-                node.put("relId",temp.getId());
-                node.put("value",temp.getId());
-                node.put("name",temp.getTypeName());
-                node.put("title",temp.getTypeName());
-                node.put("folderId",temp.getId());
-                node.put("pid",temp.getPid());
-                node.put("dcId",dcId);
-
-                //node.setNorder(norder++);
-                List<Object> subList = makeTreeNode(dcId,list, temp.getId() );
-                if( subList.size()>0 ){
-                    node.put("hasLeaf",true);
-                    node.put("children",subList);
-                }
-                else{
-                    node.put("hasLeaf",false);
-                }
-                retList.add(node);
-            }
-        }
-
-        return retList;
-    }
-
 }

@@ -6,17 +6,22 @@ import lombok.Data;
  * @author zzm
  */
 @Data
-public class QueryDataRequest {
+public class QueryTableRequest {
 
     /**
-     * 查询条件
+     * 模糊条件
      */
     private String qryCond;
 
     /**
-     * 文件夹Id
+     * 数据类型, 全部pub, 收藏 favorite
      */
-    private String catalogType;
+    private String dataType;
+
+    /**
+     * 时间条件 day week month year
+     */
+    private String ssj;
 
     /**
      * 页数
@@ -27,10 +32,5 @@ public class QueryDataRequest {
      * 分页大小
      */
     private Integer pageSize;
-
-    /**
-     * 根节点标识
-     */
-    private String dbsourceId;
 
 }

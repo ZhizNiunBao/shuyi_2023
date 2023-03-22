@@ -76,30 +76,11 @@ hystrix:
 #paraSetRedisPrefixName: byflhub_
 #是否启用日志
 logEnable: 1
-pmServerUrl: http://localhost:9199/pmserver/transform
 modelTaskFlinkUrl: http://192.168.96.96:16000/occlum/
 exchangeServerUrl: http://192.168.96.96:30000
 flowServerUrl: http://192.168.96.96:30097
 trumodelServerUrl: http://localhost:9199/pmserver/
 sqlMaxLimit: 10000
-#pythonCommand: D:/soft/Python310/python
-#byEdaPythonFileName: D:/work/pythonwork/by_eda.py
-#edaDescPythonFileName: D:/work/pythonwork/eda_desc.py
-#edaIsnullPythonFileName: D:/work/pythonwork/eda_isnull.py
-#edaNominalPythonFileName: D:/work/pythonwork/eda_nominal.py
-#edaInfoPythonFileName: D:/work/pythonwork/eda_info.py
-#edaProfilePythonFileName: D:/work/pythonwork/eda_profile.py
-#edaJdbcProfilePythonFileName: D:/work/pythonwork/eda_profile_jdbcbase64.py
-#edaHtmlNginxPath: /bdp/bywin_ui/ver/flhub
-pythonCommand: /bdp/anaconda3/bin/python
-byEdaPythonFileName: /bdp/pywork/by_eda.py
-edaDescPythonFileName: /bdp/pywork/eda_desc.py
-edaIsnullPythonFileName: /bdp/pywork/eda_isnull.py
-edaNominalPythonFileName: /bdp/pywork/eda_nominal.py
-edaInfoPythonFileName: /bdp/pywork/eda_info.py
-edaProfilePythonFileName: /bdp/pywork/eda_profile.py
-edaJdbcProfilePythonFileName: /bdp/pywork/eda_profile_jdbcbase64.py
-edaHtmlNginxPath: /bdp/bywin_ui/ui/
 
 truudfdbtype: flink_1_14_4
 olkudfdbtype: olk_1_6_0

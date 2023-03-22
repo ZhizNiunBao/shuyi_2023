@@ -778,7 +778,7 @@ public class BydbDatabaseController extends BaseController {
 //            tmpdb = new TBydbDatabaseDo();
 //            tmpdb.setDcId(dcDo.getId());
 
-            Integer maxOrder = databaseService.findMaxOrder(user.getUserName());
+            Integer maxOrder = databaseService.findMaxOrder();
             int norder = 10;
             if (maxOrder != null) {
                 norder = maxOrder.intValue() + 10;
@@ -1034,23 +1034,8 @@ public class BydbDatabaseController extends BaseController {
             if (info == null) {
                 return resMap.setErr("数据目录不存在").getResultMap();
             }
-            ObjectResp<String> retVal = apiTruModelService.delDatabase(info.getId(), user.getTokenId());
-            if (retVal.isSuccess()) {
-//                if( Constants.dchetu.equals( info.getDbsourceId() ) ){
-//                    TBydbDcServerDo dcDo = dcService.findById(info.getDcId());
-//                    HetuInfo hetuInfo = hetuJdbcOperateComponent.genHetuInfo( dcDo );
-//                    if( HetuDynamicCatalogUtil.checkCatalogExist( hetuInfo,info.getDcDbName() ) ) {
-//                        DynamicCatalogResult dynamicCatalogResult = HetuDynamicCatalogUtil.deleteCatalog( hetuInfo, info.getDcDbName() );
-//                        if ( !dynamicCatalogResult.isSuccessful() ) {
-//                            return resMap.setErr( "删除服务端目录失败"+ dynamicCatalogResult.getMessage() ).getResultMap();
-//                        }
-//                    }
-//                }
-                databaseService.deleteWithOther(info);
-                resMap.setOk("删除成功");
-            } else {
-                return retVal;
-            }
+            databaseService.deleteWithOther(info);
+            resMap.setOk("删除成功");
         } catch (Exception ex) {
             resMap.setErr("删除失败");
             logger.error("删除异常:", ex);

@@ -81,16 +81,4 @@ public class BydbDcServerService extends BaseServiceImpl<TBydbDcServerDo, String
 		}
 	}
 
-	@Transactional(rollbackFor=Exception.class)
-	public long deleteWithOther(List<TBydbDcServerDo> delList){
-
-		if( delList != null){
-			for (TBydbDcServerDo dcDo : delList) {
-				cataTypeMapper.deleteByDcId( dcDo.getId() );
-				commMapper.deleteByPrimaryKey( dcDo.getId() );
-			}
-		}
-		return 1;
-	}
-
 }

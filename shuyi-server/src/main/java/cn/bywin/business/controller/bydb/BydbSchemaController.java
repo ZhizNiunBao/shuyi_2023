@@ -408,13 +408,7 @@ public class BydbSchemaController extends BaseController {
 //                return resMap.setErr( "数据被使用，不能删除" ).getResultMap();
 //            }
 
-            ObjectResp<String> retVal = apiTruModelService.delSchema( idList,"0", user.getTokenId() );
-            if( retVal.isSuccess() ) {
-                schemaService.deleteWhithRel( list );
-            }
-            else{
-                return retVal;
-            }
+            schemaService.deleteWhithRel( list );
             resMap.setOk( "删除成功" );
 //            String times = String.valueOf(System.currentTimeMillis());
 //            for (TBydbSchemaDo info : list) {

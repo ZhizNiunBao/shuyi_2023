@@ -155,11 +155,6 @@ public class DbDataLoadThread extends Thread {
                 }
                 if ( delList.size() > 0 ) {
                     List<String> schemaDelIdList = delList.stream().map( x -> x.getId() ).distinct().collect( Collectors.toList() );
-                    ObjectResp<String> retVal = apiTruModelService.delSchema( schemaDelIdList, "1", user.getTokenId() );
-                    if ( !retVal.isSuccess() ) {
-                        logger.error( "删除pms库失败，{}", retVal.getMsg() );
-                        return;
-                    }
                     schemaService.deleteWhithRel( delList );
 //                    for (TBydbSchemaDo delObj : delList) {
 //                        new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), ips).delLog(user, delObj, "删除-刷新bydb模式与对象");
@@ -263,11 +258,6 @@ public class DbDataLoadThread extends Thread {
                 }
                 if ( delObjectList.size() > 0 ) {
                     List<String> objDelIdList = delObjectList.stream().map( x -> x.getId() ).distinct().collect( Collectors.toList() );
-                    ObjectResp<String> retVal = apiTruModelService.delTable( objDelIdList, user.getTokenId() );
-                    if ( retVal.isSuccess() ) {
-                        logger.error( "删除pms表失败：{}", retVal.getMsg() );
-                        return;
-                    }
                     objectService.deleteWhithOthers( delObjectList );
 //                    for (TBydbObjectDo objectDo : delObjectList) {
 //                        new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), ips).delLog(user, objectDo, "删除-刷新bydb模式与对象");
