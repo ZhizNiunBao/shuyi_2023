@@ -25,9 +25,6 @@ import cn.bywin.business.service.olk.OlkModelObjectService;
 import cn.bywin.business.service.olk.OlkObjectService;
 import cn.bywin.business.service.olk.OlkSchemaService;
 import cn.bywin.business.trumodel.ApiOlkDbService;
-import cn.bywin.business.trumodel.ApiTruModelService;
-import cn.bywin.common.resp.ListResp;
-import cn.bywin.common.resp.ObjectResp;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -75,9 +72,6 @@ public class OlkSchemaController extends BaseController {
 
     @Autowired
     private OlkModelObjectService modelObjService;
-
-    @Autowired
-    private ApiTruModelService apiTruModelService;
 
     @Autowired
     private ApiOlkDbService apiOlkDbService;
@@ -431,13 +425,7 @@ public class OlkSchemaController extends BaseController {
                 }
             }
 
-            ObjectResp<String> retVal = apiOlkDbService.delOlkSchema( idList,"0", user.getTokenId() );
-            if( retVal.isSuccess() ) {
-                schemaService.deleteWhithRel( list );
-            }
-            else{
-                return retVal;
-            }
+            schemaService.deleteWhithRel( list );
             resMap.setOk( "删除成功" );
 //            String times = String.valueOf(System.currentTimeMillis());
 //            for (TOlkSchemaDo info : list) {

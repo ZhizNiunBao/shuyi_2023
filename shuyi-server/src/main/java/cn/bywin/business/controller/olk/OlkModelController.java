@@ -10,7 +10,6 @@ import cn.bywin.business.bean.analysis.olk.template.OlkTableComponent;
 import cn.bywin.business.bean.bydb.TBydbDatabaseDo;
 import cn.bywin.business.bean.bydb.TBydbFieldDo;
 import cn.bywin.business.bean.bydb.TBydbObjectDo;
-import cn.bywin.business.bean.federal.FDataApproveDo;
 import cn.bywin.business.bean.federal.FDatasourceDo;
 import cn.bywin.business.bean.federal.FNodePartyDo;
 import cn.bywin.business.bean.olk.TOlkDcServerDo;
@@ -22,17 +21,13 @@ import cn.bywin.business.bean.olk.TOlkModelElementRelDo;
 import cn.bywin.business.bean.olk.TOlkModelFieldDo;
 import cn.bywin.business.bean.olk.TOlkModelFolderDo;
 import cn.bywin.business.bean.olk.TOlkModelObjectDo;
-import cn.bywin.business.bean.system.SysUserDo;
 import cn.bywin.business.bean.view.CoordVo;
 import cn.bywin.business.bean.view.bydb.DigitalAssetVo;
 import cn.bywin.business.bean.view.bydb.TBydbModelPo;
 import cn.bywin.business.bean.view.bydb.TBydbModelVo;
-import cn.bywin.business.bean.view.federal.FDataApproveVo;
-import cn.bywin.business.bean.view.federal.NodePartyView;
 import cn.bywin.business.bean.view.olk.OlkNode;
 import cn.bywin.business.bean.view.olk.OlkObjectWithFieldsVo;
 import cn.bywin.business.bean.view.olk.TOlkModelComponentVo;
-import cn.bywin.business.bean.view.olk.VOlkObjectVo;
 import cn.bywin.business.common.base.BaseController;
 import cn.bywin.business.common.base.ResponeMap;
 import cn.bywin.business.common.base.UserDo;
@@ -50,7 +45,6 @@ import cn.bywin.business.modeltask.ModelTaskFlinkApiService;
 import cn.bywin.business.service.bydb.BydbDatabaseService;
 import cn.bywin.business.service.bydb.BydbDatasetService;
 import cn.bywin.business.service.bydb.BydbObjectService;
-import cn.bywin.business.service.federal.DataPartyService;
 import cn.bywin.business.service.federal.DataSourceService;
 import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.olk.OlkDcServerService;
@@ -62,7 +56,6 @@ import cn.bywin.business.service.olk.OlkModelFolderService;
 import cn.bywin.business.service.olk.OlkModelObjectService;
 import cn.bywin.business.service.olk.OlkModelService;
 import cn.bywin.business.trumodel.ApiOlkDbService;
-import cn.bywin.business.trumodel.ApiTruModelService;
 import cn.bywin.business.util.DbTypeToFlinkType;
 import cn.bywin.business.util.JdbcTypeToJavaTypeUtil;
 import cn.bywin.business.util.JdbcTypeTransformUtil;
@@ -140,23 +133,13 @@ public class OlkModelController extends BaseController {
 
     @Autowired
     private OlkModelFolderService folderService;
-    @Autowired
-    private DataPartyService dataPartyService;
 
-//    @Autowired
-//    private OlkGrantObjectService grantObjectService;
-
-//    @Autowired
-//    private OlkApplyObjectService applyObjectService;
 
     @Autowired
     private NodePartyService nodePartyService;
 
     @Autowired
     private ApiOlkDbService apiOlkDbService;
-    @Autowired
-    private ApiTruModelService apiTruModelService;
-
 
     @Autowired
     private ModelTaskFlinkApiService modelTaskFlinkApiService;
@@ -223,16 +206,8 @@ public class OlkModelController extends BaseController {
             }
             info = modelInfo;
             truModelService.insertBeanDetail( modelInfo );
-            ObjectResp<String> retVal = apiOlkDbService.synOlkModel( modelInfo, userDo.getTokenId() );
-            if ( retVal.isSuccess() ) {
-                modelInfo.setSynFlag( 1 );
-                truModelService.updateBean( modelInfo );
-            }
-            else {
-                truModelService.deleteById( modelInfo.getId() );
-                info = null;
-                return retVal;
-            }
+            modelInfo.setSynFlag( 1 );
+            truModelService.updateBean( modelInfo );
             result.setSingleOk( info, "新增模型成功" );
         }
         catch ( Exception e ) {
@@ -691,10 +666,6 @@ public class OlkModelController extends BaseController {
 
             List<String> idList = new ArrayList<>();
             idList.add( id );
-            ObjectResp<String> retMap = apiOlkDbService.delOlkModelObject( idList, user.getTokenId() );
-            if ( !retMap.isSuccess() ) {
-                return result.setErr( retMap.getMsg() ).getResultMap();
-            }
 
             truModelObjectService.deleteById( id );
 //            Map<String, Object> retMap = apiOlkModelService.synModel( info ,user.getTokenId() );
@@ -1023,14 +994,7 @@ public class OlkModelController extends BaseController {
                         cnt--;
                     }
                     else {
-                        ObjectResp<String> retVal = apiOlkDbService.delOlkModel( info, user.getTokenId() );
-                        if ( retVal.isSuccess() ) {
-                            truModelService.deleteById( id );
-                        }
-                        else {
-                            allDelete = false;
-                            cnt--;
-                        }
+                        truModelService.deleteById( id );
                     }
                 }
                 catch ( Exception e1 ) {
@@ -2797,7 +2761,6 @@ public class OlkModelController extends BaseController {
 
             if ( retVal.isSuccess() ) {
                 //BydbObjectFieldsVo data = retVal.getData();
-                apiOlkDbService.digitalAssetOlkTabFieldList( id, user.getTokenId() );
                 ListResp<HashMap> fieldRet = apiOlkDbService.digitalAssetOlkTabFieldList( objId, user.getTokenId() );
                 //List<TBydbFieldDo> fieldList = data.getFieldList().stream().filter( x->x.getEnable()!=null && x.getEnable()==1 ).collect( Collectors.toList());
                 //List<NodePartyView> nodePartyViews = apiOlkModelService.nodePartys(data.getNodePartyId(), user.getTokenId() );

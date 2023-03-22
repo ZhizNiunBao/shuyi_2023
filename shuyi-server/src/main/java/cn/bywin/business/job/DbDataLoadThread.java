@@ -14,9 +14,7 @@ import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.service.bydb.BydbFieldService;
 import cn.bywin.business.service.bydb.BydbObjectService;
 import cn.bywin.business.service.bydb.BydbSchemaService;
-import cn.bywin.business.trumodel.ApiTruModelService;
 import cn.bywin.cache.SysParamSetOp;
-import cn.bywin.common.resp.ObjectResp;
 import cn.jdbc.IJdbcOp;
 import cn.jdbc.JdbcColumnInfo;
 import cn.jdbc.JdbcOpBuilder;
@@ -42,7 +40,6 @@ public class DbDataLoadThread extends Thread {
     private BydbObjectService objectService;
     private BydbFieldService fieldService;
     private RedisTemplate<String, Object> redisTemplate;
-    private ApiTruModelService apiTruModelService;
     TBydbDatabaseDo dbInfo;
     //TBydbDcServerDo dcDo;
     FDatasourceDo dbSourceDo;
@@ -54,12 +51,11 @@ public class DbDataLoadThread extends Thread {
     String ips;
     private String bydbRef = "bydb_ref_";
 
-    public DbDataLoadThread( BydbSchemaService schemaService, BydbObjectService objectService, BydbFieldService fieldService, ApiTruModelService apiTruModelServer, RedisTemplate<String, Object> redisTemplate,
+    public DbDataLoadThread( BydbSchemaService schemaService, BydbObjectService objectService, BydbFieldService fieldService, RedisTemplate<String, Object> redisTemplate,
                              TBydbDatabaseDo dbInfo, FDatasourceDo dbSourceDo, TBydbSchemaDo schemaInfo, TBydbObjectDo objectInfo, FNodePartyDo nodePartyDo, UserDo user, String ips ) {
         this.schemaService = schemaService;
         this.objectService = objectService;
         this.fieldService = fieldService;
-        this.apiTruModelService = apiTruModelServer;
         this.redisTemplate = redisTemplate;
         this.dbInfo = dbInfo;
         //this.dcDo = dcDo;

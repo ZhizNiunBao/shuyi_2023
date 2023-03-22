@@ -16,7 +16,6 @@ import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
-import cn.bywin.business.hetu.HetuJdbcOperate;
 import cn.bywin.business.hetu.HetuJdbcOperateComponent;
 import cn.bywin.business.job.DbDataLoadThread;
 import cn.bywin.business.service.bydb.BydbCatalogTypeService;
@@ -28,8 +27,6 @@ import cn.bywin.business.service.bydb.BydbSchemaService;
 import cn.bywin.business.service.bydb.TruModelObjectService;
 import cn.bywin.business.service.federal.DataSourceService;
 import cn.bywin.business.service.federal.NodePartyService;
-import cn.bywin.business.trumodel.ApiTruModelService;
-import cn.bywin.common.resp.ObjectResp;
 import cn.jdbc.IJdbcOp;
 import cn.jdbc.JdbcOpBuilder;
 import io.swagger.annotations.Api;
@@ -90,9 +87,6 @@ public class BydbDatabaseController extends BaseController {
 
     @Autowired
     private DataSourceService dbSourceService;
-
-    @Autowired
-    private ApiTruModelService apiTruModelService;
 
     @Autowired
     private TruModelObjectService modelObjService;
@@ -791,7 +785,7 @@ public class BydbDatabaseController extends BaseController {
             databaseService.insertBean(info);
             String redKey = bydbRef + info.getId();
 
-            DbDataLoadThread thread = new DbDataLoadThread(schemaService, objectService, fieldService, apiTruModelService, redisTemplate,
+            DbDataLoadThread thread = new DbDataLoadThread(schemaService, objectService, fieldService, redisTemplate,
                     info, dbSourceDo, null, null,nodePartyDo, user, HttpRequestUtil.getAllIp(request));
             thread.start();
             //new LogActionOp(SysParamSetOp.readValue(Constants.syspara_SystemCode, ""), HttpRequestUtil.getAllIp(request)).addLog(user, info, "新增-按配新增bydb数据目录");
@@ -1505,7 +1499,7 @@ public class BydbDatabaseController extends BaseController {
 //                    }
 //                }, "处理元数据").start();
 //            } else {
-            DbDataLoadThread thread = new DbDataLoadThread(schemaService, objectService, fieldService, apiTruModelService, redisTemplate,
+            DbDataLoadThread thread = new DbDataLoadThread(schemaService, objectService, fieldService, redisTemplate,
                     dbInfo, dbSourceDo, schemaInfo, objectInfo,nodePartyDo, user, HttpRequestUtil.getAllIp(request));
             thread.start();
 //            }

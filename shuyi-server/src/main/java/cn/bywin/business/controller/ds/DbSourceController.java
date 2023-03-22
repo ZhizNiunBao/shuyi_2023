@@ -24,7 +24,6 @@ import cn.bywin.business.service.bydb.BydbSchemaService;
 import cn.bywin.business.service.federal.DataSourceService;
 import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.system.SysDictService;
-import cn.bywin.business.trumodel.ApiTruModelService;
 import cn.bywin.common.resp.ObjectResp;
 import cn.jdbc.IJdbcOp;
 import cn.jdbc.JdbcColumnInfo;
@@ -89,9 +88,6 @@ public class DbSourceController extends BaseController {
 
     @Autowired
     private NodePartyService nodePartyService;
-
-    @Autowired
-    private ApiTruModelService apiTruModelService;
 
 
     @Autowired
@@ -247,7 +243,7 @@ public class DbSourceController extends BaseController {
             dbSourceService.insertWithDatabase( info, databaseDo );
 
             if ( databaseDo != null ) {
-                DbDataLoadThread thread = new DbDataLoadThread( schemaService, objectService, fieldService, apiTruModelService, redisTemplate,
+                DbDataLoadThread thread = new DbDataLoadThread( schemaService, objectService, fieldService, redisTemplate,
                         databaseDo, info, null, null, nodePartyDo, ud, HttpRequestUtil.getAllIp( request ) );
                 thread.start();
             }
@@ -404,7 +400,7 @@ public class DbSourceController extends BaseController {
             if ( dbList.size() > 0 ) {
                 databaseDo = dbList.get( 0 );
                 //TBydbDcServerDo dcDo = dcserverService.findById(databaseDo.getDcId());
-                DbDataLoadThread thread = new DbDataLoadThread( schemaService, objectService, fieldService, apiTruModelService, redisTemplate,
+                DbDataLoadThread thread = new DbDataLoadThread( schemaService, objectService, fieldService, redisTemplate,
                         databaseDo, info, null, null, nodePartyDo, ud, HttpRequestUtil.getAllIp( request ) );
                 thread.start();
             }

@@ -2,7 +2,6 @@ package cn.bywin.business.controller.olk;
 
 
 import cn.bywin.business.bean.bydb.TTruModelObjectDo;
-import cn.bywin.business.bean.federal.FDataApproveDo;
 import cn.bywin.business.bean.federal.FDatasourceDo;
 import cn.bywin.business.bean.federal.FNodePartyDo;
 import cn.bywin.business.bean.olk.TOlkDataNodeDo;
@@ -11,9 +10,7 @@ import cn.bywin.business.bean.olk.TOlkFieldDo;
 import cn.bywin.business.bean.olk.TOlkModelObjectDo;
 import cn.bywin.business.bean.olk.TOlkObjectDo;
 import cn.bywin.business.bean.olk.TOlkSchemaDo;
-import cn.bywin.business.bean.system.SysUserDo;
 import cn.bywin.business.bean.view.SynObjDataVo;
-import cn.bywin.business.bean.view.olk.OlkObjectWithFieldsVo;
 import cn.bywin.business.common.base.BaseController;
 import cn.bywin.business.common.base.ResponeMap;
 import cn.bywin.business.common.base.UserDo;
@@ -31,9 +28,6 @@ import cn.bywin.business.service.olk.OlkModelObjectService;
 import cn.bywin.business.service.olk.OlkObjectService;
 import cn.bywin.business.service.olk.OlkSchemaService;
 import cn.bywin.business.trumodel.ApiOlkDbService;
-import cn.bywin.business.trumodel.ApiTruModelService;
-import cn.bywin.common.resp.ListResp;
-import cn.bywin.common.resp.ObjectResp;
 import cn.jdbc.IJdbcOp;
 import cn.jdbc.JdbcOpBuilder;
 import io.swagger.annotations.Api;
@@ -91,19 +85,10 @@ public class OlkObjectController extends BaseController {
     private OlkModelObjectService modelObjService;
 
     @Autowired
-    private ApiOlkDbService apiOlkDbService;
-
-    @Autowired
-    private ApiTruModelService apiTruModelService;
-
-    @Autowired
     private NodePartyService nodePartyService;
 
     @Autowired
     private OlkDataNodeService dataNodeService;
-
-//    @Autowired
-//    private OlkDsEntityService dsEntityService;
 
     @ApiOperation(value = "修改olk对象", notes = "修改olk对象")
     @ApiImplicitParams({
@@ -409,13 +394,7 @@ public class OlkObjectController extends BaseController {
 //            criteria.andIn( "objectId", split);
 //            List<TOlkGroupObjectDo> groupObjlist = groupObjectService.findByExample(exp);
 
-            ObjectResp<String> retVal = apiOlkDbService.delOlkTable( list, user.getTokenId() );
-            if( retVal.isSuccess() ){
-                olkObjectService.deleteWhithOthers( list );
-            }
-            else{
-                return retVal;
-            }
+            olkObjectService.deleteWhithOthers( list );
 
 //            String times = String.valueOf( System.currentTimeMillis() );
 //            for (TOlkObjectDo info : list) {

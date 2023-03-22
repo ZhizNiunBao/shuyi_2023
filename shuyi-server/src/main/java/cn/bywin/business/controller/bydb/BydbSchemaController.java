@@ -20,8 +20,6 @@ import cn.bywin.business.service.bydb.BydbObjectService;
 import cn.bywin.business.service.bydb.BydbSchemaService;
 import cn.bywin.business.service.bydb.TruModelObjectService;
 import cn.bywin.business.service.federal.NodePartyService;
-import cn.bywin.business.trumodel.ApiTruModelService;
-import cn.bywin.common.resp.ObjectResp;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -68,9 +66,6 @@ public class BydbSchemaController extends BaseController {
 
     @Autowired
     private TruModelObjectService modelObjService;
-
-    @Autowired
-    private ApiTruModelService apiTruModelService;
 
     @Autowired
     private NodePartyService nodePartyService;
