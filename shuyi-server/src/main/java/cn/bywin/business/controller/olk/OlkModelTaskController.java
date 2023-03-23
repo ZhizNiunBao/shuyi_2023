@@ -5,7 +5,6 @@ import cn.bywin.business.bean.analysis.olk.OlkComponentEnum;
 import cn.bywin.business.bean.analysis.olk.template.OlkDataSourceOutPutComponent;
 import cn.bywin.business.bean.analysis.olk.template.OlkTableComponent;
 import cn.bywin.business.bean.bydb.TaskStatus;
-import cn.bywin.business.bean.federal.FDataApproveDo;
 import cn.bywin.business.bean.federal.FDatasourceDo;
 import cn.bywin.business.bean.olk.TOlkDcServerDo;
 import cn.bywin.business.bean.olk.TOlkModelDo;
@@ -16,9 +15,7 @@ import cn.bywin.business.bean.olk.TOlkModelObjectDo;
 import cn.bywin.business.bean.olk.TOlkObjectDo;
 import cn.bywin.business.bean.view.StatusCount;
 import cn.bywin.business.bean.view.bydb.OlkModelVo;
-import cn.bywin.business.bean.view.federal.FDataApproveVo;
 import cn.bywin.business.bean.view.olk.OlkModelElementVo;
-import cn.bywin.business.bean.view.olk.VOlkObjectVo;
 import cn.bywin.business.common.base.BaseController;
 import cn.bywin.business.common.base.ResponeMap;
 import cn.bywin.business.common.base.UserDo;
@@ -34,27 +31,19 @@ import cn.bywin.business.hetu.HetuJdbcOperate;
 import cn.bywin.business.hetu.HetuJdbcOperateComponent;
 import cn.bywin.business.modeltask.ModelTaskFlinkApiService;
 import cn.bywin.business.modeltask.OlkTaskFlinkApiService;
-import cn.bywin.business.service.bydb.BydbDatabaseService;
-import cn.bywin.business.service.bydb.BydbDatasetService;
-import cn.bywin.business.service.bydb.BydbObjectService;
 import cn.bywin.business.service.federal.DataSourceService;
-import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.olk.OlkDcServerService;
-import cn.bywin.business.service.olk.OlkModelComponentService;
 import cn.bywin.business.service.olk.OlkModelElementRelService;
 import cn.bywin.business.service.olk.OlkModelElementService;
 import cn.bywin.business.service.olk.OlkModelFieldService;
 import cn.bywin.business.service.olk.OlkModelObjectService;
 import cn.bywin.business.service.olk.OlkModelService;
 import cn.bywin.business.service.olk.OlkObjectService;
-import cn.bywin.business.trumodel.ApiOlkDbService;
 import cn.bywin.business.util.DbTypeToFlinkType;
 import cn.bywin.business.util.HttpOperaterUtil;
 import cn.bywin.business.util.JdbcTypeToJavaTypeUtil;
 import cn.bywin.business.util.JdbcTypeTransformUtil;
-import cn.bywin.business.util.analysis.AnalysisRunService;
 import cn.bywin.cache.SysParamSetOp;
-import cn.bywin.common.resp.ListResp;
 import cn.bywin.config.OlkModelOutDbSet;
 import cn.jdbc.IJdbcOp;
 import cn.jdbc.JdbcColumnInfo;
@@ -106,27 +95,13 @@ public class OlkModelTaskController extends BaseController {
     private OlkModelObjectService truModelObjectService;
 
     @Autowired
-    private OlkModelComponentService truModelComponentService;
-
-    @Autowired
     private OlkModelFieldService truModelFieldService;
-
-    @Autowired
-    private BydbObjectService bydbObjectService;
 
     @Autowired
     private OlkModelElementService truModelElementService;
 
-    //    @Autowired
-//    private BydbModelElementJobService truModelElementJobService;
     @Autowired
     private OlkModelElementRelService truModelElementRelService;
-
-    @Autowired
-    private BydbDatabaseService bydbDatabaseService;
-
-    @Autowired
-    private BydbDatasetService datasetService;
 
     @Autowired
     private DataSourceService dbSourceService;
@@ -138,33 +113,10 @@ public class OlkModelTaskController extends BaseController {
     private DataHubJdbcOperateConfigurate hutuConfig;
 
     @Autowired
-    private AnalysisRunService analysisRunService;
-
-    @Autowired
-    private NodePartyService nodePartyService;
-
-    @Autowired
     private OlkObjectService objectService;
 
     @Autowired
     private OlkDcServerService dcService;
-
-    @Autowired
-    private ApiOlkDbService apiOlkDbService;
-
-//    @Autowired
-//    private MenuUtil menuUtil;
-
-//    @Autowired
-//    private ISysParamSetOp setOp;
-
-//    @Autowired
-//    @Qualifier("dataHubScheduleProperties")
-//    private Properties dataHubProperties;
-
-//    @Autowired
-//    private SystemParamHolder systemParamHolder;
-
 
     @Autowired
     OlkModelOutDbSet outDbSet;

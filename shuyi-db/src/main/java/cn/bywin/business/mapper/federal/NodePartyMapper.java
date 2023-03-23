@@ -31,8 +31,6 @@ public interface NodePartyMapper extends Mapper<FNodePartyDo>, MySqlMapper<FNode
             "           ON n.id = p.node_id AND  p.project_id = #{projectId}")
     List<FNodePartyDo> findByProjectId(@Param("projectId") String projectId);
 
-    List<String> findByIds(@Param("ids") List<String> ids);
-
     List<FNodePartyDo> findByAllIds(@Param("ids") List<String> ids);
 }
 

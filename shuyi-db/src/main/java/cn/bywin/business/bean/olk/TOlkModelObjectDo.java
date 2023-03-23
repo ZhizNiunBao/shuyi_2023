@@ -37,12 +37,7 @@ public class TOlkModelObjectDo extends SidEntityDo {
     @ApiModelProperty(required = true, value = "", hidden = true, example = "")
     @Column(name = "model_id")
     private String modelId;
-    /**
-     * 
-     */
-//    @ApiModelProperty(required = true, value = "", hidden = true, example = "")
-//    @Column(name = "dc_id")
-//    private String dcId;
+
     /**
      * 数据库id
      */
@@ -93,12 +88,6 @@ public class TOlkModelObjectDo extends SidEntityDo {
     private Integer enable;
 
     /**
-     * 节点id
-     */
-    @ApiModelProperty(required = false, value = "节点id", hidden = false, example = "")
-    @Column(name = "node_party_id")
-    private String nodePartyId;
-    /**
      * 归属账号
      */
     @ApiModelProperty(required = false, value = "归属账号", hidden = false, example = "")
@@ -123,24 +112,6 @@ public class TOlkModelObjectDo extends SidEntityDo {
     @Column(name = "syn_flag")
     private Integer synFlag;
 
-    /**
-     * 分享时间
-     */
-//    @ApiModelProperty(required = true, value = "分享时间", hidden = true, example = "")
-//    @Column(name = "share_date")
-//    private Date shareDate;
-    /**
-     * 分享标志 1分享 0未分享
-     */
-//    @ApiModelProperty(required = true, value = "分享标志 1分享 0未分享", hidden = true, example = "")
-//    @Column(name = "share_flag")
-//    private Integer shareFlag;
-    /**
-     * 审核标志
-     */
-//    @ApiModelProperty(required = true, value = "审核标志", hidden = true, example = "")
-//    @Column(name = "check_flag")
-//    private Integer checkFlag;
     /**
      * 创建人ID
      */

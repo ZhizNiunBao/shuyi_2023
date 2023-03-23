@@ -2,12 +2,9 @@ package cn.bywin.business.controller.olk;
 
 
 import cn.bywin.business.bean.bydb.TTruModelObjectDo;
-import cn.bywin.business.bean.federal.FDataApproveDo;
 import cn.bywin.business.bean.olk.TOlkDatabaseDo;
 import cn.bywin.business.bean.olk.TOlkModelObjectDo;
 import cn.bywin.business.bean.olk.TOlkSchemaDo;
-import cn.bywin.business.bean.system.SysUserDo;
-import cn.bywin.business.bean.view.olk.UserGrantDbSchema;
 import cn.bywin.business.common.base.BaseController;
 import cn.bywin.business.common.base.ResponeMap;
 import cn.bywin.business.common.base.UserDo;
@@ -17,14 +14,9 @@ import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.JsonUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
-import cn.bywin.business.service.federal.NodePartyService;
-import cn.bywin.business.service.olk.OlkDataNodeService;
 import cn.bywin.business.service.olk.OlkDatabaseService;
-import cn.bywin.business.service.olk.OlkFieldService;
 import cn.bywin.business.service.olk.OlkModelObjectService;
-import cn.bywin.business.service.olk.OlkObjectService;
 import cn.bywin.business.service.olk.OlkSchemaService;
-import cn.bywin.business.trumodel.ApiOlkDbService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -33,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -65,75 +56,7 @@ public class OlkSchemaController extends BaseController {
     private OlkSchemaService schemaService;
 
     @Autowired
-    private OlkObjectService objectService;
-
-    @Autowired
-    private OlkFieldService fieldService;
-
-    @Autowired
     private OlkModelObjectService modelObjService;
-
-    @Autowired
-    private ApiOlkDbService apiOlkDbService;
-
-    @Autowired
-    private NodePartyService nodePartyService;
-
-    @Autowired
-    private OlkDataNodeService dataNodeService;
-
-    //@Autowired
-    //private OlkDcServerService dcserverService;
-
-    //String connectChar = "^";
-    //String splitChar = "\\^";
-
-
-    /*@ApiOperation(value = "新增olk库", notes = "新增olk库")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "info", value = "olk库", dataType = "TOlkSchemaDo", required = true, paramType = "body")
-    })
-    @RequestMapping(value = "/add", method = {RequestMethod.POST})
-    @ResponseBody
-    public Object add(@RequestBody TOlkSchemaDo info, HttpServletRequest request) {
-        ResponeMap resMap = this.genResponeMap();
-        try {
-            UserDo ud = LoginUtil.getUser(request);
-            if (ud == null || StringUtils.isBlank(ud.getUserId())) {
-                return resMap.setErr("请先登录").getResultMap();
-            }
-            if (StringUtils.isBlank(info.getSchemaName())) {
-                return resMap.setErr("名称不能为空").getResultMap();
-            }
-
-            if (StringUtils.isBlank(info.getDbId())) {
-                return resMap.setErr("数据库不能为空").getResultMap();
-            }
-
-            final TOlkDatabaseDo dbDo = databaseService.findById(info.getDbId());
-            if( dbDo == null ){
-                return resMap.setErr("数据库不存在").getResultMap();
-            }
-
-            info.setId(UUID.randomUUID().toString().replaceAll("-",""));
-            LoginUtil.setBeanInsertUserInfo( info,ud );
-
-            final long sameNameCount = schemaService.findSameNameCount( info );
-            if( sameNameCount >0 ){
-                return resMap.setErr("名称已使用").getResultMap();
-            }
-
-            schemaService.insertBean(info);
-
-            resMap.setSingleOk(info, "保存成功");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            resMap.setErr("保存失败");
-            logger.error("保存异常:", ex);
-        }
-        return resMap.getResultMap();
-    }*/
 
     @ApiOperation(value = "修改olk库", notes = "修改olk库")
     @ApiImplicitParams({

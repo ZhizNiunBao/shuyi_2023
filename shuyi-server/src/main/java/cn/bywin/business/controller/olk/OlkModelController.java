@@ -7,7 +7,6 @@ import cn.bywin.business.bean.analysis.olk.OlkCheckComponent;
 import cn.bywin.business.bean.analysis.olk.OlkComponentEnum;
 import cn.bywin.business.bean.analysis.olk.template.OlkDataSourceOutPutComponent;
 import cn.bywin.business.bean.analysis.olk.template.OlkTableComponent;
-import cn.bywin.business.bean.bydb.TBydbDatabaseDo;
 import cn.bywin.business.bean.bydb.TBydbFieldDo;
 import cn.bywin.business.bean.bydb.TBydbObjectDo;
 import cn.bywin.business.bean.federal.FDatasourceDo;
@@ -21,12 +20,12 @@ import cn.bywin.business.bean.olk.TOlkModelElementRelDo;
 import cn.bywin.business.bean.olk.TOlkModelFieldDo;
 import cn.bywin.business.bean.olk.TOlkModelFolderDo;
 import cn.bywin.business.bean.olk.TOlkModelObjectDo;
+import cn.bywin.business.bean.olk.TOlkObjectDo;
+import cn.bywin.business.bean.request.analysis.AddObjectRequest;
 import cn.bywin.business.bean.view.CoordVo;
 import cn.bywin.business.bean.view.bydb.DigitalAssetVo;
 import cn.bywin.business.bean.view.bydb.TBydbModelPo;
-import cn.bywin.business.bean.view.bydb.TBydbModelVo;
 import cn.bywin.business.bean.view.olk.OlkNode;
-import cn.bywin.business.bean.view.olk.OlkObjectWithFieldsVo;
 import cn.bywin.business.bean.view.olk.TOlkModelComponentVo;
 import cn.bywin.business.common.base.BaseController;
 import cn.bywin.business.common.base.ResponeMap;
@@ -42,12 +41,12 @@ import cn.bywin.business.common.util.SqlTextUtil;
 import cn.bywin.business.hetu.HetuJdbcOperate;
 import cn.bywin.business.hetu.HetuJdbcOperateComponent;
 import cn.bywin.business.modeltask.ModelTaskFlinkApiService;
-import cn.bywin.business.service.bydb.BydbDatabaseService;
-import cn.bywin.business.service.bydb.BydbDatasetService;
 import cn.bywin.business.service.bydb.BydbObjectService;
 import cn.bywin.business.service.federal.DataSourceService;
 import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.olk.OlkDcServerService;
+import cn.bywin.business.service.olk.OlkDigitalAssetService;
+import cn.bywin.business.service.olk.OlkFieldService;
 import cn.bywin.business.service.olk.OlkModelComponentService;
 import cn.bywin.business.service.olk.OlkModelElementRelService;
 import cn.bywin.business.service.olk.OlkModelElementService;
@@ -55,18 +54,17 @@ import cn.bywin.business.service.olk.OlkModelFieldService;
 import cn.bywin.business.service.olk.OlkModelFolderService;
 import cn.bywin.business.service.olk.OlkModelObjectService;
 import cn.bywin.business.service.olk.OlkModelService;
-import cn.bywin.business.trumodel.ApiOlkDbService;
+import cn.bywin.business.service.olk.OlkObjectService;
 import cn.bywin.business.util.DbTypeToFlinkType;
 import cn.bywin.business.util.JdbcTypeToJavaTypeUtil;
 import cn.bywin.business.util.JdbcTypeTransformUtil;
 import cn.bywin.business.util.analysis.OlkModelRunService;
 import cn.bywin.cache.SysParamSetOp;
-import cn.bywin.common.resp.ListResp;
-import cn.bywin.common.resp.ObjectResp;
 import cn.bywin.config.OlkModelOutDbSet;
 import cn.jdbc.IJdbcOp;
 import cn.jdbc.JdbcColumnInfo;
 import cn.jdbc.JdbcOpBuilder;
+import com.google.common.base.Preconditions;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import io.swagger.annotations.Api;
@@ -124,10 +122,16 @@ public class OlkModelController extends BaseController {
     private OlkModelElementService truModelElementService;
     @Autowired
     private OlkModelElementRelService truModelElementRelService;
+
     @Autowired
-    private BydbDatabaseService bydbDatabaseService;
+    private OlkDigitalAssetService olkDigitalAssetService;
+
     @Autowired
-    private BydbDatasetService datasetService;
+    private OlkFieldService olkFieldService;
+
+    @Autowired
+    private OlkObjectService olkObjectService;
+
     @Autowired
     private OlkModelRunService analysisRunServicr;
 
@@ -139,9 +143,6 @@ public class OlkModelController extends BaseController {
     private NodePartyService nodePartyService;
 
     @Autowired
-    private ApiOlkDbService apiOlkDbService;
-
-    @Autowired
     private ModelTaskFlinkApiService modelTaskFlinkApiService;
 
     @Autowired
@@ -150,17 +151,8 @@ public class OlkModelController extends BaseController {
     @Autowired
     private OlkDcServerService dcService;
 
-//    @Autowired
-//    private MenuUtil menuUtil;
-
-//    @Autowired
-//    private ISysParamSetOp setOp;
-//
     @Autowired
     private HetuJdbcOperateComponent hetuJdbcOperateComponent;
-
-//    @Autowired
-//    private SystemParamHolder systemParamHolder;
 
     @Autowired
     private DataSourceService dbSourceService;
@@ -476,127 +468,44 @@ public class OlkModelController extends BaseController {
 
     @ApiOperation(value = "新增数据列表", notes = "新增数据列表")
     @RequestMapping(value = "/addobject", method = {RequestMethod.POST})
-    public Map<String, Object> addObject( @RequestBody TBydbModelVo modelInfo, HttpServletRequest request ) {
+    public Map<String, Object> addObject(@RequestBody AddObjectRequest request) {
         ResponeMap result = this.genResponeMap();
 
-        try {
-            UserDo user = LoginUtil.getUser( request );
-            if ( modelInfo.getModelDo() == null || StringUtils.isBlank( modelInfo.getModelDo().getId() ) ) {
-                return result.setErr( "模型id为空" ).getResultMap();
-            }
-            TOlkModelDo modelDo = truModelService.findById( modelInfo.getModelDo().getId() );
-            if ( modelDo == null ) {
-                return result.setErr( "模型不存在" ).getResultMap();
-            }
+        UserDo user = LoginUtil.getUser();
+        Preconditions.checkArgument(StringUtils.isNotBlank(request.getModelId()), "模型id为空");
+        TOlkModelDo modelDo = truModelService.findById(request.getModelId());
+        Preconditions.checkArgument(modelDo != null, "模型不存在");
+        String objectId = request.getObjectId();
+        Preconditions.checkArgument(objectId != null, "模型对象为空");
 
-            String ts = "部分";
+        TOlkModelObjectDo tmp = new TOlkModelObjectDo();
+        tmp.setModelId( modelDo.getId() );
+        List<TOlkModelObjectDo> moList = truModelObjectService.find( tmp );
+        List<String> idList = moList.stream().map( x -> x.getObjectId() ).collect( Collectors.toList() );
 
-            HashMap<String, TBydbDatabaseDo> dbMap = new HashMap<>();
-
-            TOlkModelObjectDo tmp = new TOlkModelObjectDo();
-            tmp.setModelId( modelDo.getId() );
-            List<TOlkModelObjectDo> moList = truModelObjectService.find( tmp );
-            List<String> idList = moList.stream().map( x -> x.getObjectId() ).collect( Collectors.toList() );
-            if ( modelInfo.getObjectDos().size() == 1 ) {
-                ts = "";
-            }
-            FNodePartyDo nodePartyDo = nodePartyService.findFirst();
-            List<TOlkModelObjectDo> tabList = new ArrayList<>();
-            for ( TBydbObjectDo x : modelInfo.getObjectDos() ) {
-                if ( idList.indexOf( x.getId() ) >= 0 ) {
-                    return result.setErr( ts + "资源已存在" ).getResultMap();
-                }
-                TOlkModelObjectDo obj = new TOlkModelObjectDo();
-                obj.setModelId( modelDo.getId() );
-
-                //if ( x.getId().startsWith( "db" ) ) {
-                //    String id = x.getId().substring( 2 );
-
-                //TBydbObjectDo table = bydbObjectService.findById( x.getId() );
-//                if ( table != null )
-//                {
-//                        return result.setErr( ts + "资源不存在" ).getResultMap();
-//                    }
-//                    TBydbDatabaseDo databaseDo = dbMap.get( table.getDbId() );
-//                    if ( databaseDo == null ) {
-//                        databaseDo = bydbDatabaseService.findById( table.getDbId() );
-//                        dbMap.put( databaseDo.getId(), databaseDo );
-//                    }
-//                    if(!Constants.dchetu.equals( databaseDo.getDbsourceId() )){
-//                        return result.setErr(ComUtil.trsEmpty( table.getObjChnName(),table.getObjectName() ) +"不可参与分析").getResultMap();
-//                    }
-                //obj.setStype( "db" );
-                obj.setObjectId( x.getId() );
-                obj.setRealObjId( x.getId() );
-                //obj.setDbId( table.getDbId() );
-                obj.setUserId( user.getUserId() );
-                obj.setUserAccount( user.getUserName() );
-                obj.setUserName( user.getChnName() );
-                //obj.setSchemaId( table.getSchemaId() );
-                //obj.setObjectName( table.getObjectName() );
-                //obj.setObjChnName( table.getObjChnName() );
-                //obj.setObjFullName( table.getObjFullName() );
-                //}
-                //else {
-                //else if ( x.getId().startsWith( "ds" ) ) {
-//                    String id = x.getId();//.substring( 2 );
-//                    TBydbDatasetDo datasetDo = datasetService.findById( id );
-//                    if ( datasetDo == null ) {
-//                        return result.setErr( ts + "资源不存在" ).getResultMap();
-//                    }
-//                    if ( !Constants.dchetu.equals( datasetDo.getDatasourceId() ) ) {
-//                        return result.setErr( ComUtil.trsEmpty( datasetDo.getSetChnName(), datasetDo.getSetCode() ) + "不可参与分析" ).getResultMap();
-//                    }
-//                    obj.setStype( "ds" );
-//                    obj.setObjectId( x.getId() );
-//                    obj.setRealObjId( datasetDo.getId() );
-//                    obj.setDbId( datasetDo.getDatasourceId() );
-//                    obj.setUserId( datasetDo.getUserId() );
-//                    obj.setUserAccount( datasetDo.getUserAccount() );
-//                    obj.setUserName( datasetDo.getUserName() );
-//                    obj.setObjectName( datasetDo.getSetCode() );
-//                    obj.setObjChnName( datasetDo.getSetChnName() );
-//                    obj.setObjFullName( datasetDo.getViewName() );
-//                }
-//                else {
-//                    return result.setErr( ts + "资源id不正确" ).getResultMap();
-//                }
-                obj.setNodePartyId( nodePartyDo.getId() );
-                obj.setSynFlag( 1 );
-                obj.setId( ComUtil.genId() );
-                LoginUtil.setBeanInsertUserInfo( obj, user );
-                tabList.add( obj );
-            }
-            for ( TOlkModelObjectDo tOlkModelObjectDo : tabList ) {
-                ObjectResp<TOlkModelObjectDo> retVal = apiOlkDbService.synOlkModelObject( tOlkModelObjectDo, user.getTokenId() );
-                if( !retVal.isSuccess() ){
-                    return result.setErr( "保存失败,"+retVal.getMsg() ).getResultMap();
-                }
-                TOlkModelObjectDo info =retVal.getData();
-                truModelObjectService.insertBean( info );
-            }
-            //truModelObjectService.batchAdd( tabList );
-//            List<TOlkModelObjectDo> saveList =  apiOlkModelService.synmodelobject( tabList, user.getTokenId() );
-//
-//            if ( saveList!= null && saveList.size()>0 ) {
-//                truModelObjectService.batchAdd( saveList );
-//            }
-//            else {
-//                String msg = String.format( "保存失败" );
-////                if ( retMap.containsKey( "msg" ) ) {
-////                    msg = String.format( "%s,错误信息：%s", msg, retMap.get( "msg" ) );
-////                }
-////                for ( TOlkModelObjectDo tOlkModelObjectDo : tabList ) {
-////                    truModelService.deleteById( tOlkModelObjectDo.getId() );
-////                }
-//                return result.setErr( msg ).getResultMap();
-//            }
-            result.setSingleOk( modelInfo, "新增数据列表成功" );
+        TOlkObjectDo table = olkObjectService.findById(request.getObjectId());
+        if ( idList.contains(objectId)) {
+            return result.setErr("资源已存在" ).getResultMap();
         }
-        catch ( Exception e ) {
-            logger.error( "新增数据列表失败", e );
-            result.setErr( "新增数据列表失败" );
-        }
+        TOlkModelObjectDo obj = new TOlkModelObjectDo();
+        obj.setModelId( modelDo.getId() );
+        obj.setObjectId(objectId);
+        obj.setRealObjId(objectId);
+        obj.setUserId(user.getUserId());
+        obj.setUserAccount(user.getUserName());
+        obj.setUserName(user.getChnName());
+        obj.setSynFlag(1);
+        obj.setId( ComUtil.genId() );
+        obj.setStype( "db" );
+        obj.setDbId( table.getDbId() );
+        obj.setSchemaId( table.getSchemaId() );
+        obj.setObjectName( table.getObjectName() );
+        obj.setObjChnName( table.getObjChnName() );
+        obj.setObjFullName( table.getObjFullName() );
+        LoginUtil.setBeanInsertUserInfo( obj, user );
+        truModelObjectService.insertBean(obj);
+
+        result.setOk( "新增数据列表成功" );
         return result.getResultMap();
     }
 
@@ -668,18 +577,6 @@ public class OlkModelController extends BaseController {
             idList.add( id );
 
             truModelObjectService.deleteById( id );
-//            Map<String, Object> retMap = apiOlkModelService.synModel( info ,user.getTokenId() );
-//            if ( retMap.containsKey( "success" ) && (boolean) retMap.get( "success" ) ) {
-//                info.setSynFlag( 1 );
-//                bydbModelService.updateBean( info );
-//            }
-//            else{
-//                String msg = String.format( "保存失败");
-//                if ( retMap.containsKey( "msg" ) ) {
-//                    msg = String.format( "%s,错误信息：%s",msg,retMap.get( "msg" ) );
-//                }
-//                return resMap.setErr( msg ).getResultMap();
-//            }
             result.setSingleOk( info.getId(), "删除成功" );
         }
         catch ( Exception e ) {
@@ -1502,14 +1399,7 @@ public class OlkModelController extends BaseController {
                 if ( elementInfo.getElementType() == 1 ) {
                     String tcId = elementInfo.getTcId();
                     TOlkModelObjectDo modelObjectDo = truModelObjectService.selectByObjectId( tcId, modelInfo.getId() );
-                    ObjectResp<OlkObjectWithFieldsVo> retVal = apiOlkDbService.olkTableWithSubInfo( tcId, userDo.getTokenId() );
-                    if ( !retVal.isSuccess() ) {
-                        return result.setErr( retVal.getMsg() ).getResultMap();
-                    }
-                    if(retVal.getData().getEnable() == null || retVal.getData().getEnable() !=1 ){
-                        return result.setErr( "资源已失效" ).getResultMap();
-                    }
-                    fieldList = retVal.getData().getFieldList();
+                    fieldList = olkFieldService.selectByObjectId(tcId);
                     elementInfo.setOrigName( modelObjectDo.getObjectName() );
                 }
                 else {
@@ -2720,67 +2610,38 @@ public class OlkModelController extends BaseController {
 
     @ApiOperation(value = "模型对象详情", notes = "模型对象详情")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "id", value = "模型对象id", dataType = "String", required = false, paramType = "query")
+            @ApiImplicitParam(name = "objId", value = "表Id", dataType = "String", required = false, paramType = "query")
     })
     @RequestMapping(value = "/modelobjectinfo", method = {RequestMethod.GET})
     @ResponseBody
-    public Object modelObjectInfo( String id, String objId, String modelId, HttpServletRequest request ) {
+    public Object modelObjectInfo(String objId) {
         ResponeMap resMap = this.genResponeMap();
-        try {
-            UserDo user = LoginUtil.getUser();
-//            TOlkModelObjectDo modObj = truModelObjectService.findById( id );
-//            if( modObj == null){
-//                return resMap.setErr( "模型对象不存在" ).getResultMap();
-//            }
+        UserDo user = LoginUtil.getUser();
 
-            if ( StringUtils.isNotBlank( objId ) ) {
+        if ( StringUtils.isNotBlank( objId ) ) {
 
-            }
-
-            DigitalAssetVo modelVo = new DigitalAssetVo();
-            modelVo.setId( objId );
-            FNodePartyDo nodePartyDo = nodePartyService.findFirst();
-            modelVo.setOwnerId( user.getUserId() );
-            modelVo.setScatalog( "db" );
-            modelVo.setDataType( "nodeview" );
-
-            HashMap<String, Object> paraMap = new HashMap<>();
-            MyBeanUtils.copyBeanNotNull2Map( modelVo, paraMap );
-            logger.debug( "{}", paraMap );
-
-            ListResp<DigitalAssetVo> daVal = apiOlkDbService.digitalAssetOlkSearchList( paraMap, user.getTokenId() );
-            if ( !daVal.isSuccess() ) {
-                return resMap.setErr( "获取失败,"+daVal.getMsg() ).getResultMap();
-            }
-            if ( daVal.getData().size() == 0 ) {
-                return resMap.setErr( "获取失败,不存在或以无权限" ).getResultMap();
-            }
-            DigitalAssetVo digitalAssetVo = daVal.getData().get( 0 );
-
-            ObjectResp<OlkObjectWithFieldsVo> retVal = apiOlkDbService.olkTableWithSubInfo( objId, user.getTokenId() );
-
-            if ( retVal.isSuccess() ) {
-                //BydbObjectFieldsVo data = retVal.getData();
-                ListResp<HashMap> fieldRet = apiOlkDbService.digitalAssetOlkTabFieldList( objId, user.getTokenId() );
-                //List<TBydbFieldDo> fieldList = data.getFieldList().stream().filter( x->x.getEnable()!=null && x.getEnable()==1 ).collect( Collectors.toList());
-                //List<NodePartyView> nodePartyViews = apiOlkModelService.nodePartys(data.getNodePartyId(), user.getTokenId() );
-                //TBydbObjectDo objectDo = new TBydbObjectDo();
-                //MyBeanUtils.copyBeanNotNull2Bean( data,objectDo );
-                resMap.put( "tabledataset", digitalAssetVo );
-//                for ( NodePartyView nodePartyView : nodePartyViews ) {
-//                    if(data.getNodePartyId().equals( nodePartyView.getId() )){
-//                        resMap.put( "node",nodePartyView );
-//                    }
-//                }
-                //ListResp<BydbTabDatasetUseProjVo> upRet = apiOlkModelService.tabDataSetUseProj( data.getId(), user.getTokenId() );
-                //resMap.put( "useProjList", upRet.getData() );
-                resMap.setOk( fieldRet.getData().size(), fieldRet.getData(), "" );
-            }
-            //resMap.setOk(findCnt, list, "获取联邦成员列表成功");
         }
-        catch ( Exception ex ) {
-            resMap.setErr( "模型对象详情失败" );
-            logger.error( "模型对象详情失败:", ex );
+
+        DigitalAssetVo modelVo = new DigitalAssetVo();
+        modelVo.setId( objId );
+        modelVo.setOwnerId( user.getUserId() );
+        modelVo.setScatalog( "db" );
+        modelVo.setDataType( "nodeview" );
+
+        HashMap<String, Object> paraMap = new HashMap<>();
+        MyBeanUtils.copyBeanNotNull2Map( modelVo, paraMap );
+        logger.debug( "{}", paraMap );
+
+        List<DigitalAssetVo> digitalAssetVos = olkDigitalAssetService.findBeanList(modelVo);
+        Preconditions.checkArgument(digitalAssetVos.size() == 1, "指定资源不存在");
+
+        DigitalAssetVo digitalAssetVo = digitalAssetVos.get( 0 );
+
+        List<TOlkFieldDo> fieldList = olkFieldService.selectByObjectId(objId);
+        if (fieldList != null && fieldList.size() > 0) {
+            List<TOlkFieldDo> fieldDos = olkFieldService.selectByObjectId(objId);
+            resMap.put( "tabledataset", digitalAssetVo );
+            resMap.setOk( fieldDos.size(), fieldDos, "" );
         }
         return resMap.getResultMap();
     }

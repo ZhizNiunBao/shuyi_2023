@@ -4,13 +4,11 @@ import cn.bywin.business.bean.federal.FNodePartyDo;
 import cn.bywin.business.bean.view.federal.NodePartyView;
 import cn.bywin.business.mapper.federal.NodePartyMapper;
 import cn.service.impl.BaseServiceImpl;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.common.Mapper;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class NodePartyService extends BaseServiceImpl<FNodePartyDo, String> {
@@ -41,10 +39,6 @@ public class NodePartyService extends BaseServiceImpl<FNodePartyDo, String> {
 
     public FNodePartyDo findByPartId(String partyId) {
         return nodePartyMapper.findByPartId(partyId);
-    }
-
-    public List<String> findByIds(List<String> userId) {
-        return nodePartyMapper.findByIds(userId);
     }
 
     public FNodePartyDo findFirst() {

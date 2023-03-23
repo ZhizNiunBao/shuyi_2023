@@ -77,9 +77,6 @@ hystrix:
 #是否启用日志
 logEnable: 1
 modelTaskFlinkUrl: http://192.168.96.96:16000/occlum/
-exchangeServerUrl: http://192.168.96.96:30000
-flowServerUrl: http://192.168.96.96:30097
-trumodelServerUrl: http://localhost:9199/pmserver/
 sqlMaxLimit: 10000
 
 truudfdbtype: flink_1_14_4

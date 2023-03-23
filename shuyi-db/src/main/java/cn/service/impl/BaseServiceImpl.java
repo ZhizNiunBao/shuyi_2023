@@ -3,14 +3,13 @@ package cn.service.impl;
 import cn.bywin.business.common.base.BaseEntityDo;
 import cn.bywin.business.common.base.SidEntityDo;
 import cn.service.BaseService;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
-
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.UUID;
 
 public abstract class BaseServiceImpl<T,ID> implements BaseService<T,ID> {
 

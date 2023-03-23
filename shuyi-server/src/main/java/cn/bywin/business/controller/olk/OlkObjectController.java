@@ -27,7 +27,6 @@ import cn.bywin.business.service.olk.OlkFieldService;
 import cn.bywin.business.service.olk.OlkModelObjectService;
 import cn.bywin.business.service.olk.OlkObjectService;
 import cn.bywin.business.service.olk.OlkSchemaService;
-import cn.bywin.business.trumodel.ApiOlkDbService;
 import cn.jdbc.IJdbcOp;
 import cn.jdbc.JdbcOpBuilder;
 import io.swagger.annotations.Api;

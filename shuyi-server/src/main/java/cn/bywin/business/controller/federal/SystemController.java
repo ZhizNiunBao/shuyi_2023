@@ -85,11 +85,6 @@ public class SystemController extends BaseController {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-    @Value("${exchangeServerUrl}")
-    private String exchangeServerUrl;
-    @Value("${flowServerUrl}")
-    private String flowServerUrl;
-
     @ApiOperation(value = "首页消息列表", notes = "首页消息列表")
     @RequestMapping(value = "/msglist", method = {RequestMethod.GET})
     public Map<String, Object> msgList(HttpServletRequest request, SysLogDo sysLogDo) {
