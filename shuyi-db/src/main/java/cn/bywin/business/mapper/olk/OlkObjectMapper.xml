@@ -15,10 +15,6 @@
             and id = #{id}
         </if>
 
-        <if test="nodePartyId != null ">
-            and node_party_id = #{nodePartyId}
-        </if>
-
         <if test="userId != null ">
             and user_id= #{userId}
         </if>

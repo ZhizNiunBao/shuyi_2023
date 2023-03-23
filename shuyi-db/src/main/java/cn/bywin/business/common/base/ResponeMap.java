@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class ResponeMap implements Serializable {
 	public final String resultFlag = "success";
-	public final String msgFlag = "message";
+	public final String msgFlag = "msg";
 	private final String defMsg = "操作失败！";
 	private final String codeFlag = "code";
 	private final Map<String, Object> resultMap = new HashMap<>();

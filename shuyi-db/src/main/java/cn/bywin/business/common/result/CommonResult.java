@@ -9,16 +9,16 @@ public class CommonResult implements Serializable {
     protected static final String SUCCESS_CODE;
     protected static final String SUCCESS_MESSAGE;
     private String code;
-    private String message;
+    private String msg;
 
     public CommonResult() {
         this.code = SUCCESS_CODE;
-        this.message = SUCCESS_MESSAGE;
+        this.msg = SUCCESS_MESSAGE;
     }
 
     public CommonResult(String code, String message) {
         this.code = code;
-        this.message = message;
+        this.msg = message;
     }
 
     public boolean isSuccess() {
@@ -33,12 +33,12 @@ public class CommonResult implements Serializable {
         this.code = code;
     }
 
-    public String getMessage() {
-        return this.message;
+    public String getMsg() {
+        return this.msg;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMsg(String message) {
+        this.msg = message;
     }
 
     static {
