@@ -402,13 +402,8 @@ public class LoginController extends BaseController {
                 } else {
                     userDo.setAdminIf(0);
                 }
-                FNodePartyDo nodePartyDo = nodePartyService.findAll().get(0);
-                if (nodePartyDo == null) {
-                    return result.setErr("节点不存在").getResultMap();
-                }
                 TokenVo tokenVo = new TokenVo();
                 tokenVo.setUuid(ComUtil.genId());
-                tokenVo.setNode(nodePartyDo.getId());
                 tokenVo.setUserId(userDo.getUserId());
                 tokenVo.setTs(System.currentTimeMillis());
                 String text = JsonUtil.toJson(tokenVo);

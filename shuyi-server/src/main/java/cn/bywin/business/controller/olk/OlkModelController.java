@@ -167,17 +167,12 @@ public class OlkModelController extends BaseController {
         TOlkModelDo info = null;
         try {
             UserDo userDo = LoginUtil.getUser( request );
-            FNodePartyDo nodePartyDo = nodePartyService.findFirst();
-//            if( StringUtils.isBlank( userDo.getOrgNo() ) ){
-//                return result.setErr("用户信息不完整").getResultMap();
-//            }
             LoginUtil.setBeanInsertUserInfo( modelInfo, userDo );
             modelInfo.setStatus( 4 );
             modelInfo.setRunType( 1 );
             modelInfo.setCreateDeptNo( userDo.getOrgNo() );
             modelInfo.setCreateDeptNa( userDo.getOrgName() );
             modelInfo.setSynFlag( 0 );
-            modelInfo.setNodePartyId( nodePartyDo.getId() );
             modelInfo.setConfig( "olk" );
             if(StringUtils.isBlank( modelInfo.getDcId() )) {
                 modelInfo.setDcId( null );

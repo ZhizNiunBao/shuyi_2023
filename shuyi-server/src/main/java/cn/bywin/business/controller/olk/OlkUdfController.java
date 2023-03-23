@@ -43,13 +43,6 @@ public class OlkUdfController extends BaseController {
     @Autowired
     private OlkUdfService udfService;
 
-    @Value( "${olkudfdbtype:flink_1_14_4}" )
-    private String udfdbtype;
-
-    String connectChar = "^";
-    String splitChar = "\\^";
-
-
     @ApiOperation(value = "新增bydbUDF", notes = "新增bydbUDF")
     @ApiImplicitParams({
            // @ApiImplicitParam(name = "info", value = "bydbUDF", dataType = "TTruUdfDo", required = true, paramType = "body")
@@ -252,7 +245,6 @@ public class OlkUdfController extends BaseController {
             }*/
 
             TOlkUdfDo modelVo =new TOlkUdfDo();
-            modelVo.setDbType( udfdbtype );
             if(StringUtils.isNotBlank( qryCond )) {
                 modelVo.setQryCond(String.format( "%%%s%%" ,qryCond));
             }

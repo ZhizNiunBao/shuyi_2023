@@ -20,7 +20,6 @@ import cn.bywin.business.common.util.HttpRequestUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
 import cn.bywin.business.common.util.PageBeanWrapper;
 import cn.bywin.business.service.federal.DataSourceService;
-import cn.bywin.business.service.federal.NodePartyService;
 import cn.bywin.business.service.olk.OlkDataNodeService;
 import cn.bywin.business.service.olk.OlkDatabaseService;
 import cn.bywin.business.service.olk.OlkFieldService;
@@ -82,9 +81,6 @@ public class OlkObjectController extends BaseController {
 
     @Autowired
     private OlkModelObjectService modelObjService;
-
-    @Autowired
-    private NodePartyService nodePartyService;
 
     @Autowired
     private OlkDataNodeService dataNodeService;
@@ -540,58 +536,6 @@ public class OlkObjectController extends BaseController {
             if ( cnt == 0 ) {
                 return resMap.setErr( "没有数据可操作" ).getResultMap();
             }
-//            if( list.size() != split.size() ){
-//                return resMap.setErr("数据已变化，操作失败").getResultMap();
-//            }
-
-
-            FNodePartyDo nodePartyDo = nodePartyService.findFirst();
-            //Map<String,TOlkDatabaseDo> dbMap = new HashMap<>();
-            //Map<String,TOlkSchemaDo> schemaMap = new HashMap<>();
-
-            /*for ( TOlkObjectDo info : list ) {
-                if( !dbMap.containsKey( info.getDbId() )) {
-                    TOlkDatabaseDo dbDo = databaseService.findById( info.getDbId() );
-                    if( dbDo.getShareFlag() == null || dbDo.getShareFlag() !=1 ){
-                        dbDo.setShareFlag( 1 );
-                        dbDo.setNodePartyId( nodePartyDo.getId() );
-                        dbDo.setShareTime( ComUtil.getCurTimestamp() );
-
-                        Map<String, Object> retMap = apiTruModelService.synDatabase( dbDo, ud.getTokenId() );
-                        if ( retMap.containsKey( "success" ) && !(boolean) retMap.get( "success" ) ) {
-                            return resMap.setErr( "保存完成，同步目录信息失败" ).getResultMap();
-                        }
-                        TOlkDatabaseDo tmp = new TOlkDatabaseDo();
-                        tmp.setId( dbDo.getId() );
-                        tmp.setNodePartyId( dbDo.getNodePartyId() );
-                        tmp.setShareTime( dbDo.getShareTime() );
-                        tmp.setShareFlag( dbDo.getShareFlag() );
-                        databaseService.updateNoNull( tmp );
-                        dbMap.put( dbDo.getId(),dbDo );
-                    }
-                }
-
-                if( !schemaMap.containsKey( info.getSchemaId() )) {
-                    TOlkSchemaDo schemaDo = schemaService.findById( info.getSchemaId() );
-                    if( schemaDo.getShareFlag() == null || schemaDo.getShareFlag() !=1 ){
-                        schemaDo.setShareFlag( 1 );
-                        schemaDo.setNodePartyId( nodePartyDo.getId() );
-                        schemaDo.setShareTime( ComUtil.getCurTimestamp() );
-
-                        Map<String, Object> retMap = apiTruModelService.synSchema( schemaDo, ud.getTokenId() );
-                        if ( retMap.containsKey( "success" ) && !(boolean) retMap.get( "success" ) ) {
-                            return resMap.setErr( "保存完成，同步目录信息失败" ).getResultMap();
-                        }
-                        TOlkSchemaDo tmp = new TOlkSchemaDo();
-                        tmp.setId( schemaDo.getId() );
-                        tmp.setNodePartyId( schemaDo.getNodePartyId() );
-                        tmp.setShareTime( schemaDo.getShareTime() );
-                        tmp.setShareFlag( schemaDo.getShareFlag() );
-                        schemaService.updateNoNull( tmp );
-                        schemaMap.put( schemaDo.getId(),schemaDo );
-                    }
-                }
-            }*/
 
             List<String> idList = new ArrayList<>();
             for ( TOlkObjectDo info : list ) {

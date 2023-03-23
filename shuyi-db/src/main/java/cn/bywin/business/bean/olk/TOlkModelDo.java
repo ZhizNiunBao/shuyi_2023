@@ -19,12 +19,7 @@ public class TOlkModelDo extends SidEntityDo {
     @ApiModelProperty(required = true, value = "可视化组件类型 1 为 纵向 0 为横向", hidden = false, example = "1")
     @Column(name = "model_type")
     private Integer modelType;
-    /**
-     * 模型编码
-     */
-//    @ApiModelProperty(required = false, value = "模型编码", hidden = true, example = "")
-//    @Column(name = "model")
-//    private String model;
+
     /**
      * sql语句
      */

@@ -77,10 +77,6 @@ hystrix:
 #是否启用日志
 logEnable: 1
 modelTaskFlinkUrl: http://192.168.96.96:16000/occlum/
-sqlMaxLimit: 10000
-
-truudfdbtype: flink_1_14_4
-olkudfdbtype: olk_1_6_0
 
 trumodeloutdbset:
   dstype: STARROCKS

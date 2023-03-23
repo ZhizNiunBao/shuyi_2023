@@ -35,39 +35,13 @@ spring:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
 
-  servlet: 
-    multipart: 
-      max-file-size: 200MB
-      max-request-size: 200MB
-
   aop: 
     proxy-target-class: true
-
-#spring.freemarker.request-context-attribute :  req  #req访问request
-  freemarker: 
-    enabled: true
-    allow-request-override: false
-    check-template-location: true
-    expose-request-attributes: false
-    expose-session-attributes: false
-    expose-spring-macro-helpers: false
-#后缀名
-    suffix: .html
-    content-type: text/html
-#缓存配置
-    cache: false
-#模板加载路径 按需配置
-    template-loader-path: classpath:/static/
-#编码格式
-    charset: UTF-8
 
 #mybaties config
 # 设置 MyBatis mapper 的别名所在的包
 mybatis:
   type-aliases-package: cn.bywin.business.bean
-  # 设置 mapper 接口对应 XMl 配置文件的路径
-  #mapper-locations: classpath*:mybatis/mapper/**/*.xml
-  #config-location: classpath:mybatis/mybatis-config.xml
   configuration:
     map-underscore-to-camel-case: true
     call-setters-on-nulls: true
