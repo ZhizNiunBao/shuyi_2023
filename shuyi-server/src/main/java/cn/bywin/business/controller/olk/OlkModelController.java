@@ -1,6 +1,7 @@
 package cn.bywin.business.controller.olk;
 
 import static cn.bywin.business.common.enums.TreeRootNodeEnum.MODEL_OBJECT;
+import static cn.bywin.business.bean.analysis.olk.OlkComponentEnum.SqlOperator_COMPONENT;
 
 import cn.bywin.business.bean.analysis.olk.OlkBaseComponenT;
 import cn.bywin.business.bean.analysis.olk.OlkCheckComponent;
@@ -22,6 +23,14 @@ import cn.bywin.business.bean.olk.TOlkModelFolderDo;
 import cn.bywin.business.bean.olk.TOlkModelObjectDo;
 import cn.bywin.business.bean.olk.TOlkObjectDo;
 import cn.bywin.business.bean.request.analysis.AddObjectRequest;
+import cn.bywin.business.bean.response.sqloperator.OlkModelOperatorElementRelVo;
+import cn.bywin.business.bean.response.sqloperator.OlkTableVo;
+import cn.bywin.business.bean.response.sqloperator.SqlOperatorVo;
+import cn.bywin.business.bean.sqloperator.TOlkModelOperatorElementDo;
+import cn.bywin.business.bean.sqloperator.TOlkModelOperatorElementRelDo;
+import cn.bywin.business.bean.sqloperator.TSqlOperatorDo;
+import cn.bywin.business.bean.sqloperator.TSqlOperatorInDo;
+import cn.bywin.business.bean.sqloperator.TSqlOperatorTableDo;
 import cn.bywin.business.bean.view.CoordVo;
 import cn.bywin.business.bean.view.bydb.DigitalAssetVo;
 import cn.bywin.business.bean.view.bydb.TBydbModelPo;
@@ -40,6 +49,11 @@ import cn.bywin.business.common.util.PageBeanWrapper;
 import cn.bywin.business.common.util.SqlTextUtil;
 import cn.bywin.business.hetu.HetuJdbcOperate;
 import cn.bywin.business.hetu.HetuJdbcOperateComponent;
+import cn.bywin.business.mapper.sqloperator.OlkModelOperatorElementMapper;
+import cn.bywin.business.mapper.sqloperator.OlkModelOperatorElementRelMapper;
+import cn.bywin.business.mapper.sqloperator.SqlOperatorInMapper;
+import cn.bywin.business.mapper.sqloperator.SqlOperatorMapper;
+import cn.bywin.business.mapper.sqloperator.SqlOperatorTableMapper;
 import cn.bywin.business.modeltask.ModelTaskFlinkApiService;
 import cn.bywin.business.service.bydb.BydbObjectService;
 import cn.bywin.business.service.federal.DataSourceService;
@@ -71,6 +85,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -83,6 +98,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -107,6 +123,16 @@ import tk.mybatis.mapper.entity.Example;
 public class OlkModelController extends BaseController {
     protected final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
+    @Autowired
+    SqlOperatorTableMapper sqlOperatorTableMapper;
+    @Autowired
+    SqlOperatorInMapper sqlOperatorInMapper;
+    @Autowired
+    SqlOperatorMapper sqlOperatorMapper;
+    @Autowired
+    OlkModelOperatorElementMapper olkModelOperatorElementMapper;
+    @Autowired
+    OlkModelOperatorElementRelMapper olkModelOperatorElementRelMapper;
     @Autowired
     private OlkModelService truModelService;
     @Autowired
@@ -1506,6 +1532,14 @@ public class OlkModelController extends BaseController {
             modelInfo.setCacheFlag( 0 );
             truModelService.updateBean( modelInfo );
             truModelElementService.deleteById( id );
+
+            TOlkModelOperatorElementDo tOlkModelOperatorElementDo = new TOlkModelOperatorElementDo();
+            tOlkModelOperatorElementDo.setElementId(id);
+            olkModelOperatorElementMapper.delete(tOlkModelOperatorElementDo);
+
+            TOlkModelOperatorElementRelDo tOlkModelOperatorElementRelDo = new TOlkModelOperatorElementRelDo();
+            tOlkModelOperatorElementRelDo.setElementId(id);
+            olkModelOperatorElementRelMapper.delete(tOlkModelOperatorElementRelDo);
             result.setSingleOk( elementInfo.getId(), "删除成功" );
             //异步更新整体模型配置
             //analysisRunServicr.asyncModel(elementInfo.getModelId());
@@ -1746,6 +1780,53 @@ public class OlkModelController extends BaseController {
                 baseComponenT.setExtendsDos( extenFieldList );
                 OlkNode node = truModelElementService.getNodes( elementInfo );
                 data = baseComponenT.init( node, elementInfo );
+
+                if (SqlOperator_COMPONENT.getComponentName().equals(data.getType())) {
+
+                    TOlkModelOperatorElementDo tOlkModelOperatorElementDo = olkModelOperatorElementMapper
+                        .selectByPrimaryKey(data.getId());
+                    data.initParams();
+
+                    if ( tOlkModelOperatorElementDo == null) {
+                        data.getParams().put("inCodeElementRel",null);
+                        data.getParams().put("operatorId",null);
+                    } else {
+                        data.getParams().put("operatorId",tOlkModelOperatorElementDo.getOperatorId());
+
+                        List<OlkModelOperatorElementRelVo> distinctInCode = sqlOperatorInMapper
+                            .getDistinctInCode(tOlkModelOperatorElementDo.getOperatorId());
+
+                        TOlkModelOperatorElementRelDo olkModelOperatorElementRelDo = new TOlkModelOperatorElementRelDo();
+                        olkModelOperatorElementRelDo.setElementId(data.getId());
+                        List<OlkModelOperatorElementRelVo> relVos = olkModelOperatorElementRelMapper
+                            .select(olkModelOperatorElementRelDo).stream().map(indo -> {
+                                OlkModelOperatorElementRelVo olkModelOperatorElementRelVo = new OlkModelOperatorElementRelVo();
+                                MyBeanUtils.copyBean2Bean(olkModelOperatorElementRelVo, indo);
+                                return olkModelOperatorElementRelVo;
+                            }).collect(Collectors.toList());
+
+                        distinctInCode.forEach( incode -> {
+                            for (OlkModelOperatorElementRelVo relVo : relVos) {
+                                if (incode.getInCode().equals(relVo.getInCode())) {
+                                    incode.setInElementId(relVo.getInElementId());
+                                }
+                            }
+                        });
+
+                        data.getParams().put("inCodeElementRel",distinctInCode);
+
+                    }
+
+                    TSqlOperatorDo tSqlOperatorDo = new TSqlOperatorDo();
+                    tSqlOperatorDo.setCreatorId(Objects.requireNonNull(LoginUtil.getUser()).getUserId());
+                    data.getParams().put("operatorList",sqlOperatorMapper.select(tSqlOperatorDo).stream().map( indo -> {
+                        SqlOperatorVo sqlOperatorVo = new SqlOperatorVo();
+                        MyBeanUtils.copyBean2Bean(sqlOperatorVo,indo);
+                        return sqlOperatorVo;
+                    }).collect(Collectors.toList()));
+
+
+                }
             }
             else if ( elementInfo.getElementType() == 1 ) {
                 OlkBaseComponenT baseComponenT = new OlkTableComponent();
@@ -1811,6 +1892,63 @@ public class OlkModelController extends BaseController {
                     return result.setErr( checkComponent.getMessage() ).getResultMap();
                 }
 
+                if (SqlOperator_COMPONENT.getComponentName().equals(params.getType())) {
+                    Map<String, Object> operatorParamas = params.getParams();
+                    List<TOlkModelOperatorElementRelDo> list = ((List<Map>) operatorParamas.get("inCodeElementRel")).stream().map( inMap -> {
+                        TOlkModelOperatorElementRelDo tOlkModelOperatorElementRelDo = new TOlkModelOperatorElementRelDo();
+                        try {
+                            MyBeanUtils.copyMap2Bean(tOlkModelOperatorElementRelDo,inMap);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                        return tOlkModelOperatorElementRelDo;
+                    }).collect(Collectors.toList());
+
+                    String operatorId = (String) operatorParamas.get("operatorId");
+
+                    TOlkModelOperatorElementDo tOlkModelOperatorElementDo = new TOlkModelOperatorElementDo();
+                    tOlkModelOperatorElementDo.setElementId(params.getId());
+                    olkModelOperatorElementMapper.delete(tOlkModelOperatorElementDo);
+                    tOlkModelOperatorElementDo.setOperatorId(operatorId);
+                    tOlkModelOperatorElementDo.setCreatorId(user.getUserId());
+                    tOlkModelOperatorElementDo.setCreatorName(user.getUserName());
+                    olkModelOperatorElementMapper.insertSelective(tOlkModelOperatorElementDo);
+
+                    TOlkModelOperatorElementRelDo tOlkModelOperatorElementRelDo = new TOlkModelOperatorElementRelDo();
+                    tOlkModelOperatorElementRelDo.setElementId(params.getId());
+                    olkModelOperatorElementRelMapper.delete(tOlkModelOperatorElementRelDo);
+                    for (TOlkModelOperatorElementRelDo olkModelOperatorElementRelDo : list) {
+                        olkModelOperatorElementRelDo.setCreatorId(user.getUserId());
+                        olkModelOperatorElementRelDo.setCreatorName(user.getUserName());
+                        olkModelOperatorElementRelDo.setElementId(params.getId());
+                        olkModelOperatorElementRelDo.setId(ComUtil.genId());
+                        olkModelOperatorElementRelMapper.insertSelective(olkModelOperatorElementRelDo);
+                    }
+
+                    TSqlOperatorTableDo tSqlOperatorTableDo = new TSqlOperatorTableDo();
+                    tSqlOperatorTableDo.setOperatorId(operatorId);
+                    List<OlkTableVo> collect = sqlOperatorTableMapper.select(tSqlOperatorTableDo)
+                        .stream().map(indo -> {
+                            String datasourceFullName = sqlOperatorTableMapper
+                                .getDatasourceFullName(indo.getDatasourceId());
+                            OlkTableVo olkTableVo = new OlkTableVo();
+                            olkTableVo
+                                .setTableFullName(datasourceFullName + "." + indo.getSourceTable());
+                            olkTableVo.setTableRegex("#\\{" + indo.getSourceTable() + "}");
+                            return olkTableVo;
+                        }).collect(Collectors.toList());
+                    params.getParams().put("tableRegex",collect);
+
+                    TSqlOperatorDo tSqlOperatorDo = sqlOperatorMapper
+                        .selectByPrimaryKey(operatorId);
+
+                    params.getParams().put("operatorSql",tSqlOperatorDo.getScriptContent());
+                }
+
+
+
                 baseComponenT.build( params, elementInfo, info );
                 baseComponenT.changeSameFieldName( params, elementInfo );
             }
@@ -1845,6 +1983,8 @@ public class OlkModelController extends BaseController {
 //                    tabSourceMap.put( eleInfo.getTcId(), retVal.getData() );
 //                }
             }
+
+
             analysisRunServicr.asyncModel( elementInfo.getModelId(), tabSourceMap );
 
             result.setOk( "成功" );
