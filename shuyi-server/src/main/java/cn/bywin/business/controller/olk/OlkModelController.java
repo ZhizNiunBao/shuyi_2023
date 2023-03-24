@@ -1944,6 +1944,13 @@ public class OlkModelController extends BaseController {
                     TSqlOperatorDo tSqlOperatorDo = sqlOperatorMapper
                         .selectByPrimaryKey(operatorId);
 
+
+                    params.getParams().put("inCodeElementRel",list.stream().map( indo -> {
+                        OlkModelOperatorElementRelVo olkModelOperatorElementRelVo = new OlkModelOperatorElementRelVo();
+                        MyBeanUtils.copyBean2Bean(olkModelOperatorElementRelVo,indo);
+                        return olkModelOperatorElementRelVo;
+                    }).collect(Collectors.toList()));
+
                     params.getParams().put("operatorSql",tSqlOperatorDo.getScriptContent());
                 }
 

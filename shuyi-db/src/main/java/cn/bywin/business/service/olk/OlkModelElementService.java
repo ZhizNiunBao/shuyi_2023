@@ -292,6 +292,16 @@ public class OlkModelElementService extends BaseServiceImpl<TOlkModelElementDo, 
 //                for ( Map<String,Object> fieldDo : groupList ) {
 //                    viewNodes.add( fieldDo.get( "id" ).toString() );
 //                }
+            }else if ( "t_operator".equalsIgnoreCase( type ) ){
+                viewNodes.clear();
+//                List<Map<String,Object>> selList = (List<Map<String,Object>>) node.getParams().get( "field" );
+//                List<Map<String,Object>> groupList = (List<Map<String,Object>>) node.getParams().get( "group" );
+//                for ( Map<String,Object> fieldDo : selList ) {
+//                    viewNodes.add( fieldDo.get( "id" ).toString() );
+//                }
+//                for ( Map<String,Object> fieldDo : groupList ) {
+//                    viewNodes.add( fieldDo.get( "id" ).toString() );
+//                }
             }
         }
 
@@ -314,7 +324,9 @@ public class OlkModelElementService extends BaseServiceImpl<TOlkModelElementDo, 
                 delList.remove( ftmp );
                 if (viewNodes.contains(fieldDo.getId())) {
                     fieldDo.setIsSelect(1);
-                    //viewNodes.remove( fieldDo.getId() );
+                    //viewNodes.remove( fiel
+                    //
+                    // dDo.getId() );
                 } else {
                     fieldDo.setIsSelect(0);
                 }

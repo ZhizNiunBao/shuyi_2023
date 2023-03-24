@@ -72,24 +72,28 @@ public class SqlOperatorServiceImpl implements SqlOperatorService {
                 .getSqlOperatorTableVoList();
 
             sqlOperatorMapper.insertSelective(sqlOperatorDo);
-            for (SqlOperatorInVo sqlOperatorInVo : sqlOperatorInVoList) {
-                TSqlOperatorInDo sqlOperatorInDo = new TSqlOperatorInDo();
-                MyBeanUtils.copyBean2Bean(sqlOperatorInDo, sqlOperatorInVo);
-                sqlOperatorInDo.setId(ComUtil.genId());
-                sqlOperatorInDo.setOperatorId(sqlOperatorDo.getId());
-                sqlOperatorInDo.setCreatorId(userDo.getUserId());
-                sqlOperatorInDo.setCreatorName(userDo.getUserName());
-                sqlOperatorInMapper.insertSelective(sqlOperatorInDo);
+            if (sqlOperatorInVoList != null) {
+                for (SqlOperatorInVo sqlOperatorInVo : sqlOperatorInVoList) {
+                    TSqlOperatorInDo sqlOperatorInDo = new TSqlOperatorInDo();
+                    MyBeanUtils.copyBean2Bean(sqlOperatorInDo, sqlOperatorInVo);
+                    sqlOperatorInDo.setId(ComUtil.genId());
+                    sqlOperatorInDo.setOperatorId(sqlOperatorDo.getId());
+                    sqlOperatorInDo.setCreatorId(userDo.getUserId());
+                    sqlOperatorInDo.setCreatorName(userDo.getUserName());
+                    sqlOperatorInMapper.insertSelective(sqlOperatorInDo);
+                }
             }
 
-            for (SqlOperatorTableVo sqlOperatorTableVo : sqlOperatorTableVoList) {
-                TSqlOperatorTableDo sqlOperatorTableDo = new TSqlOperatorTableDo();
-                MyBeanUtils.copyBean2Bean(sqlOperatorTableDo, sqlOperatorTableVo);
-                sqlOperatorTableDo.setId(ComUtil.genId());
-                sqlOperatorTableDo.setOperatorId(sqlOperatorDo.getId());
-                sqlOperatorTableDo.setCreatorName(userDo.getUserName());
-                sqlOperatorTableDo.setCreatorId(userDo.getUserId());
-                sqlOperatorTableMapper.insertSelective(sqlOperatorTableDo);
+            if (sqlOperatorTableVoList != null) {
+                for (SqlOperatorTableVo sqlOperatorTableVo : sqlOperatorTableVoList) {
+                    TSqlOperatorTableDo sqlOperatorTableDo = new TSqlOperatorTableDo();
+                    MyBeanUtils.copyBean2Bean(sqlOperatorTableDo, sqlOperatorTableVo);
+                    sqlOperatorTableDo.setId(ComUtil.genId());
+                    sqlOperatorTableDo.setOperatorId(sqlOperatorDo.getId());
+                    sqlOperatorTableDo.setCreatorName(userDo.getUserName());
+                    sqlOperatorTableDo.setCreatorId(userDo.getUserId());
+                    sqlOperatorTableMapper.insertSelective(sqlOperatorTableDo);
+                }
             }
 
         } catch (Exception e) {
@@ -179,7 +183,7 @@ public class SqlOperatorServiceImpl implements SqlOperatorService {
             sqlOperatorMapper.delete(sqlOperatorDo);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ServerException("500","删除失败");
+            throw new ServerException("500", "删除失败");
         }
 
     }
@@ -190,7 +194,7 @@ public class SqlOperatorServiceImpl implements SqlOperatorService {
 
         PageHelper.startPage(currentPage, pageSize);
         return sqlOperatorMapper.queryPage(name, type, userDo.getUserId())
-            .stream().map( i -> {
+            .stream().map(i -> {
                 SqlOperatorVo sqlOperatorVo = new SqlOperatorVo();
                 MyBeanUtils.copyBean2Bean(sqlOperatorVo, i);
                 return sqlOperatorVo;
@@ -204,26 +208,27 @@ public class SqlOperatorServiceImpl implements SqlOperatorService {
 
         TSqlOperatorInDo sqlOperatorInDo = new TSqlOperatorInDo();
         sqlOperatorInDo.setOperatorId(sqlOperatorDo.getId());
-        sqlOperatorInfoVo.setSqlOperatorInVoList(sqlOperatorInMapper.select(sqlOperatorInDo).stream().map( indo -> {
-            SqlOperatorInVo sqlOperatorInVo = new SqlOperatorInVo();
-            MyBeanUtils.copyBean2Bean(sqlOperatorInVo, indo);
-            return sqlOperatorInVo;
-        }).collect(Collectors.toList()));
+        sqlOperatorInfoVo.setSqlOperatorInVoList(
+            sqlOperatorInMapper.select(sqlOperatorInDo).stream().map(indo -> {
+                SqlOperatorInVo sqlOperatorInVo = new SqlOperatorInVo();
+                MyBeanUtils.copyBean2Bean(sqlOperatorInVo, indo);
+                return sqlOperatorInVo;
+            }).collect(Collectors.toList()));
 
         TSqlOperatorTableDo sqlOperatorTableDo = new TSqlOperatorTableDo();
         sqlOperatorTableDo.setOperatorId(sqlOperatorDo.getId());
-        sqlOperatorInfoVo.setSqlOperatorTableVoList(sqlOperatorTableMapper.select(sqlOperatorTableDo).stream().map( indo -> {
-            SqlOperatorTableVo sqlOperatorTableVo = new SqlOperatorTableVo();
-            MyBeanUtils.copyBean2Bean(sqlOperatorTableVo, indo);
-            return sqlOperatorTableVo;
-        }).collect(Collectors.toList()));
+        sqlOperatorInfoVo.setSqlOperatorTableVoList(
+            sqlOperatorTableMapper.select(sqlOperatorTableDo).stream().map(indo -> {
+                SqlOperatorTableVo sqlOperatorTableVo = new SqlOperatorTableVo();
+                MyBeanUtils.copyBean2Bean(sqlOperatorTableVo, indo);
+                return sqlOperatorTableVo;
+            }).collect(Collectors.toList()));
 
         SqlOperatorVo sqlOperatorVo = new SqlOperatorVo();
         MyBeanUtils.copyBean2Bean(sqlOperatorVo, sqlOperatorDo);
         sqlOperatorInfoVo.setSqlOperatorVo(sqlOperatorVo);
         return sqlOperatorInfoVo;
     }
-
 
 
 }

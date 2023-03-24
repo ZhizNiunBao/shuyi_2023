@@ -13,8 +13,6 @@ import cn.bywin.business.bean.olk.TOlkModelElementRelDo;
 import cn.bywin.business.bean.olk.TOlkModelFieldDo;
 import cn.bywin.business.bean.response.sqloperator.OlkModelOperatorElementRelVo;
 import cn.bywin.business.bean.response.sqloperator.OlkTableVo;
-import cn.bywin.business.bean.sqloperator.TOlkModelOperatorElementRelDo;
-import cn.bywin.business.bean.sqloperator.TSqlOperatorDo;
 import cn.bywin.business.bean.view.olk.OlkNode;
 import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
@@ -37,29 +35,19 @@ public class OlkSqlOperatorComponent extends OlkBaseComponenT {
         throws Exception {
 
         List<TOlkModelElementDo> preModel = getPreModel();
-        List<OlkModelOperatorElementRelVo> list = ((List<Map>) truNode.getParams().get("inCodeElementRel")).stream().map( inMap -> {
-            OlkModelOperatorElementRelVo tOlkModelOperatorElementRelVo = new OlkModelOperatorElementRelVo();
-            try {
-                MyBeanUtils.copyMap2Bean(tOlkModelOperatorElementRelVo,inMap);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-            return tOlkModelOperatorElementRelVo;
-        }).collect(Collectors.toList());
+        List<OlkModelOperatorElementRelVo> list = ((List<OlkModelOperatorElementRelVo>) truNode.getParams().get("inCodeElementRel"));
 
         String runSql = (String) truNode.getParams().get("operatorSql");
         List<OlkTableVo> olkTableVos = (List<OlkTableVo>) truNode.getParams().get("tableRegex");
 
         for (OlkTableVo olkTableVo : olkTableVos) {
-            runSql.replaceAll(olkTableVo.getTableRegex(), olkTableVo.getTableFullName());
+            runSql = runSql.replaceAll(olkTableVo.getTableRegex(), olkTableVo.getTableFullName());
         }
 
         for (OlkModelOperatorElementRelVo olkModelOperatorElementRelVo : list) {
             for (TOlkModelElementDo tOlkModelElementDo : preModel) {
                 if (olkModelOperatorElementRelVo.getInElementId().equals(tOlkModelElementDo.getId())) {
-                    runSql.replaceAll("\\$\\{" + olkModelOperatorElementRelVo.getInCode() + "}","(" + tOlkModelElementDo.getRunSql() + ")");
+                    runSql = runSql.replaceAll("\\$\\{" + olkModelOperatorElementRelVo.getInCode() + "}","(" + tOlkModelElementDo.getRunSql() + ")");
                 }
             }
         }
