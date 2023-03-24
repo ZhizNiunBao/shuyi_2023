@@ -71,7 +71,7 @@ public class SqlOperatorServiceImpl implements SqlOperatorService {
             List<SqlOperatorTableVo> sqlOperatorTableVoList = sqlOperatorAdd
                 .getSqlOperatorTableVoList();
 
-            sqlOperatorMapper.insert(sqlOperatorDo);
+            sqlOperatorMapper.insertSelective(sqlOperatorDo);
             for (SqlOperatorInVo sqlOperatorInVo : sqlOperatorInVoList) {
                 TSqlOperatorInDo sqlOperatorInDo = new TSqlOperatorInDo();
                 MyBeanUtils.copyBean2Bean(sqlOperatorInDo, sqlOperatorInVo);
@@ -79,7 +79,7 @@ public class SqlOperatorServiceImpl implements SqlOperatorService {
                 sqlOperatorInDo.setOperatorId(sqlOperatorDo.getId());
                 sqlOperatorInDo.setCreatorId(userDo.getUserId());
                 sqlOperatorInDo.setCreatorName(userDo.getUserName());
-                sqlOperatorInMapper.insert(sqlOperatorInDo);
+                sqlOperatorInMapper.insertSelective(sqlOperatorInDo);
             }
 
             for (SqlOperatorTableVo sqlOperatorTableVo : sqlOperatorTableVoList) {
@@ -89,7 +89,7 @@ public class SqlOperatorServiceImpl implements SqlOperatorService {
                 sqlOperatorTableDo.setOperatorId(sqlOperatorDo.getId());
                 sqlOperatorTableDo.setCreatorName(userDo.getUserName());
                 sqlOperatorTableDo.setCreatorId(userDo.getUserId());
-                sqlOperatorTableMapper.insert(sqlOperatorTableDo);
+                sqlOperatorTableMapper.insertSelective(sqlOperatorTableDo);
             }
 
         } catch (Exception e) {
@@ -112,7 +112,7 @@ public class SqlOperatorServiceImpl implements SqlOperatorService {
         );
 
         try {
-            sqlOperatorMapper.updateByPrimaryKey(sqlOperatorDo);
+            sqlOperatorMapper.updateByPrimaryKeySelective(sqlOperatorDo);
             TSqlOperatorTableDo sqlOperatorTableDo = new TSqlOperatorTableDo();
             sqlOperatorTableDo.setOperatorId(sqlOperatorDo.getId());
             sqlOperatorTableDo.setCreatorId(userDo.getUserId());
@@ -136,7 +136,7 @@ public class SqlOperatorServiceImpl implements SqlOperatorService {
                 sqlOperatorInDo.setOperatorId(sqlOperatorDo.getId());
                 sqlOperatorInDo.setCreatorId(userDo.getUserId());
                 sqlOperatorInDo.setCreatorName(userDo.getUserName());
-                sqlOperatorInMapper.insert(sqlOperatorInDo);
+                sqlOperatorInMapper.insertSelective(sqlOperatorInDo);
             }
 
             for (SqlOperatorTableVo sqlOperatorTableVo : sqlOperatorTableVoList) {
@@ -146,7 +146,7 @@ public class SqlOperatorServiceImpl implements SqlOperatorService {
                 sqlOperatorTableDo.setOperatorId(sqlOperatorDo.getId());
                 sqlOperatorTableDo.setCreatorId(userDo.getUserId());
                 sqlOperatorTableDo.setCreatorName(userDo.getUserName());
-                sqlOperatorTableMapper.insert(sqlOperatorTableDo);
+                sqlOperatorTableMapper.insertSelective(sqlOperatorTableDo);
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -458,6 +458,7 @@ public class OlkAggregationComponent extends OlkBaseComponenT {
         }
     }
 
+    @Override
     public List<TOlkModelFieldDo> relExtends( TOlkModelElementRelDo elementInfo ) throws Exception {
         List<TOlkModelFieldDo> list = new ArrayList<>();
         Map<String, TOlkModelComponentDo> idcomponentDoMap = getComponents().stream().collect( Collectors.toMap( TOlkModelComponentDo::getId, e -> e ) );

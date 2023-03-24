@@ -9,6 +9,7 @@ import cn.bywin.business.bean.analysis.olk.template.OlkFieldFuncComponent;
 import cn.bywin.business.bean.analysis.olk.template.OlkFieldSelectComponent;
 import cn.bywin.business.bean.analysis.olk.template.OlkIntersectionComponent;
 import cn.bywin.business.bean.analysis.olk.template.OlkJoinComponent;
+import cn.bywin.business.bean.analysis.olk.template.OlkSqlOperatorComponent;
 import cn.bywin.business.bean.analysis.olk.template.OlkTableComponent;
 
 /**
@@ -34,6 +35,8 @@ public enum OlkComponentEnum {
     Intersect_COMPONENT("t_intersect", OlkIntersectionComponent.class),
     //计算列函数
     FieldFunc_COMPONENT("t_func", OlkFieldFuncComponent.class),
+    //sql算子
+    SqlOperator_COMPONENT("t_operator", OlkSqlOperatorComponent.class),
     //数据源输出
     DataSourceOutPut_COMPONENT("t_datasource", OlkDataSourceOutPutComponent.class),
     //字段设置

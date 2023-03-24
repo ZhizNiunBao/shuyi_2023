@@ -720,6 +720,8 @@ public class OlkModelRunService {
             modelDo.setLastRunTime( null );
         }
         truModelService.updateBean( modelDo );
+
+
     }
 
     public void genViewAndColumns( TOlkModelDo info ) throws Exception {

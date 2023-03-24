@@ -9,6 +9,7 @@ import cn.bywin.business.common.result.ResultUtil;
 import cn.bywin.business.common.result.SingleResult;
 import cn.bywin.business.service.sqloperator.SqlOperatorService;
 import com.google.common.base.Preconditions;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
     methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE},
     maxAge = 3600)
 @RestController
+@Api(tags = "sql算子管理")
 @RequestMapping("/sqlopetator")
 public class SqlOperatorController {
 

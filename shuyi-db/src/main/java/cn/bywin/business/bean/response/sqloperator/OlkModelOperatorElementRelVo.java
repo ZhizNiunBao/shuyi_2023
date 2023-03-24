@@ -6,9 +6,9 @@ import lombok.Data;
  * @author lhw
  */
 @Data
-public class SqlOutVo {
+public class OlkModelOperatorElementRelVo {
 
-    private String outCode;
+    String inCode;
 
-    private String outName;
+    String inElementId;
 }
