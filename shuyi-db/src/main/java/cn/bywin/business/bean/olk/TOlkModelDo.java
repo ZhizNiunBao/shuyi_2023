@@ -84,9 +84,9 @@ public class TOlkModelDo extends SidEntityDo {
     /**
      * 节点id
      */
-    @ApiModelProperty(required = false, value = "节点id", hidden = false, example = "")
-    @Column(name = "node_party_id")
-    private String nodePartyId;
+    @ApiModelProperty(required = false, value = "发布标志", hidden = false, example = "")
+    @Column(name = "publish_flag")
+    private Integer publishFlag;
     /**
      * 上传标志 1已上传 3待上传
      */
