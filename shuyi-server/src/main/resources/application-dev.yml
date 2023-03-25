@@ -8,9 +8,9 @@ spring:
     #druid:
     #old mysql driver
     driver-class-name: com.mysql.jdbc.Driver
-    jdbc-url: jdbc:mysql://192.168.96.96:3306/shuyi_server_modaf?characterEncoding=utf8&useOldAliasMetadataBehavior=true&allowMultiQueries=true&useSSL=false
+    jdbc-url: jdbc:mysql://hadoop102:3306/shuyi_server_modaf?characterEncoding=utf8&useOldAliasMetadataBehavior=true&allowMultiQueries=true&useSSL=false
     username: root
-    password: Bywin@123!@#
+    password: 298440
     initialSize: 3
     minIdle: 2
     maxActive: 5

@@ -528,43 +528,42 @@ public class OlkModelRunService {
                 OlkNode truNode = truModelElementService.getNodes( elementInfo );
                 OlkNode init = baseComponenT.init( truNode, elementInfo );
                 if ( baseComponenT.check( init, elementInfo ).isSuccess() ) {
-
                     if (baseComponenT instanceof OlkSqlOperatorComponent) {
                         String operatorId = olkModelOperatorElementMapper
-                            .selectByPrimaryKey(elementInfo.getId()).getOperatorId();
+                                .selectByPrimaryKey(elementInfo.getId()).getOperatorId();
                         truNode.initParams();
                         truNode.getParams().put("operatorId",operatorId);
 
                         TSqlOperatorTableDo tSqlOperatorTableDo = new TSqlOperatorTableDo();
                         tSqlOperatorTableDo.setOperatorId(operatorId);
                         List<OlkTableVo> collect = sqlOperatorTableMapper.select(tSqlOperatorTableDo)
-                            .stream().map(indo -> {
-                                String datasourceFullName = sqlOperatorTableMapper
-                                    .getDatasourceFullName(indo.getDatasourceId());
-                                OlkTableVo olkTableVo = new OlkTableVo();
-                                olkTableVo
-                                    .setTableFullName(datasourceFullName + "." + indo.getSourceTable());
-                                olkTableVo.setTableRegex("#\\{" + indo.getSourceTable() + "}");
-                                return olkTableVo;
-                            }).collect(Collectors.toList());
+                                .stream().map(indo -> {
+                                    String datasourceFullName = sqlOperatorTableMapper
+                                            .getDatasourceFullName(indo.getDatasourceId());
+                                    OlkTableVo olkTableVo = new OlkTableVo();
+                                    olkTableVo
+                                            .setTableFullName(datasourceFullName + "." + indo.getSourceTable());
+                                    olkTableVo.setTableRegex("#\\{" + indo.getSourceTable() + "}");
+                                    return olkTableVo;
+                                }).collect(Collectors.toList());
                         truNode.getParams().put("tableRegex",collect);
 
                         TSqlOperatorDo tSqlOperatorDo = sqlOperatorMapper
-                            .selectByPrimaryKey(operatorId);
+                                .selectByPrimaryKey(operatorId);
 
                         truNode.getParams().put("operatorSql",tSqlOperatorDo.getScriptContent());
 
 
                         List<OlkModelOperatorElementRelVo> distinctInCode = sqlOperatorInMapper
-                            .getDistinctInCode(operatorId);
+                                .getDistinctInCode(operatorId);
                         TOlkModelOperatorElementRelDo olkModelOperatorElementRelDo = new TOlkModelOperatorElementRelDo();
                         olkModelOperatorElementRelDo.setElementId(elementInfo.getId());
                         List<OlkModelOperatorElementRelVo> relVos = olkModelOperatorElementRelMapper
-                            .select(olkModelOperatorElementRelDo).stream().map(indo -> {
-                                OlkModelOperatorElementRelVo olkModelOperatorElementRelVo = new OlkModelOperatorElementRelVo();
-                                MyBeanUtils.copyBean2Bean(olkModelOperatorElementRelVo, indo);
-                                return olkModelOperatorElementRelVo;
-                            }).collect(Collectors.toList());
+                                .select(olkModelOperatorElementRelDo).stream().map(indo -> {
+                                    OlkModelOperatorElementRelVo olkModelOperatorElementRelVo = new OlkModelOperatorElementRelVo();
+                                    MyBeanUtils.copyBean2Bean(olkModelOperatorElementRelVo, indo);
+                                    return olkModelOperatorElementRelVo;
+                                }).collect(Collectors.toList());
 
                         distinctInCode.forEach( incode -> {
                             for (OlkModelOperatorElementRelVo relVo : relVos) {
@@ -578,16 +577,18 @@ public class OlkModelRunService {
 
                         String olkVdmCatalogViewName = SysParamSetOp.readValue("olkVdmCatalogViewName", "");
                         try (HetuJdbcOperate dbop = hetuJdbcOperateComponent.genHetuJdbcOperate()) {
-                                String viewSql = String.format("CREATE OR REPLACE VIEW %s.tmp_%s AS %s",
+                            String viewSql = String.format("CREATE OR REPLACE VIEW %s.tmp_%s AS %s",
                                     olkVdmCatalogViewName, elementInfo.getId(), elementInfo.getRunSql());
-                                dbop.execute(viewSql);
+                            dbop.execute(viewSql);
 
-                                String showViewColumns = String.format("show columns from %s.tmp_%s",olkVdmCatalogViewName, elementInfo.getId());
-                                List<Map<String, Object>> maps = dbop.selectData(showViewColumns);
+                            String showViewColumns = String.format("show columns from %s.tmp_%s",olkVdmCatalogViewName, elementInfo.getId());
+                            List<Map<String, Object>> maps = dbop.selectData(showViewColumns);
 
+                            init.getOperators().getFields().clear();
+                            init.getViewIds().clear();
 
                             truModelFieldService.deleteByElementId(elementInfo.getId());
-                                int norder = 1;
+                            int norder = 1;
                             for (Map<String, Object> map : maps) {
                                 TOlkModelFieldDo tOlkModelFieldDo = new TOlkModelFieldDo();
                                 tOlkModelFieldDo.setId(ComUtil.genId());
@@ -607,6 +608,9 @@ public class OlkModelRunService {
                                 tOlkModelFieldDo.setFilterSort(norder++);
 
                                 truModelFieldService.insertBean(tOlkModelFieldDo);
+
+                                init.getOperators().getFields().add(tOlkModelFieldDo);
+                                init.getViewIds().add(tOlkModelFieldDo.getId());
                             }
                         }
                     }

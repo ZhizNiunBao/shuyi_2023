@@ -9,6 +9,8 @@ import cn.bywin.business.bean.olk.TOlkModelFieldDo;
 import cn.bywin.business.bean.olk.TOlkModelObjectDo;
 import cn.bywin.business.bean.view.olk.OlkNode;
 import cn.bywin.business.bean.view.olk.OlkOperators;
+import cn.bywin.business.common.base.UserDo;
+import cn.bywin.business.common.login.LoginUtil;
 import cn.bywin.business.common.util.ComUtil;
 import cn.bywin.business.common.util.JsonUtil;
 import cn.bywin.business.common.util.MyBeanUtils;
@@ -182,6 +184,10 @@ public class OlkModelElementService extends BaseServiceImpl<TOlkModelElementDo, 
 
     @Transactional(rollbackFor = Exception.class)
     public void insertBeanDetail(TOlkModelElementDo elementInfo,List<TOlkFieldDo> fieldList) throws Exception {
+        UserDo user = LoginUtil.getUser();
+        elementInfo.setCreatorId(user.getUserId());
+        elementInfo.setCreatorName(user.getUserName());
+
         String uuid = ComUtil.genId();
         List<String> eleList = truModelElementMapper.selectByModelId( elementInfo.getModelId() ).stream()
                 .filter( x -> StringUtils.isNotBlank( x.getElement() ) ).map( x -> x.getElement() ).collect( Collectors.toList() );
@@ -283,16 +289,6 @@ public class OlkModelElementService extends BaseServiceImpl<TOlkModelElementDo, 
                 //rightList.forEach( x-> viewNodes.add( x.getId() ) );
             }
             else if ( "t_aggregation".equalsIgnoreCase( type ) ){
-                viewNodes.clear();
-//                List<Map<String,Object>> selList = (List<Map<String,Object>>) node.getParams().get( "field" );
-//                List<Map<String,Object>> groupList = (List<Map<String,Object>>) node.getParams().get( "group" );
-//                for ( Map<String,Object> fieldDo : selList ) {
-//                    viewNodes.add( fieldDo.get( "id" ).toString() );
-//                }
-//                for ( Map<String,Object> fieldDo : groupList ) {
-//                    viewNodes.add( fieldDo.get( "id" ).toString() );
-//                }
-            }else if ( "t_operator".equalsIgnoreCase( type ) ){
                 viewNodes.clear();
 //                List<Map<String,Object>> selList = (List<Map<String,Object>>) node.getParams().get( "field" );
 //                List<Map<String,Object>> groupList = (List<Map<String,Object>>) node.getParams().get( "group" );
